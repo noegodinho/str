@@ -1,13 +1,16 @@
 CC = gcc
 CFLAGS = -Wall -O2 -D_REENTRANT -lpthread -lrt
-DEPS = func.h
-OBJ = func.o
-TARGET = ex1
+SOURCE = ./src/
+DEPS = ./lib/func.c
+OBJ = ./obj/func.o
+BIN = ./bin/
+FILE = $(SOURCE)ex1
+TARGET = $(BIN)ex1
 
 all: $(TARGET)
 
-$(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) $(TARGET).c $(OBJ) -o $(TARGET)
+$(TARGET): $(FILE).c
+	$(CC) $(CFLAGS) $(FILE).c $(OBJ) -o $(TARGET)
 
 clean:
 	$(RM) $(TARGET)
