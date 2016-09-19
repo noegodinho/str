@@ -5,6 +5,8 @@
 #include <errno.h>
 #include "../lib/func.h"
 
+/* PL2, G5 */
+
 int main(){
     cpu_set_t set;
 
