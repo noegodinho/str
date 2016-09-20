@@ -27,7 +27,7 @@ int main(){
 
     /* clear cpu mask */
     CPU_ZERO(&set);
-    /* set cpu 0 */ 
+    /* set cpu 0 */
     CPU_SET(0, &set);
 
     /* 0 is the calling process */
@@ -39,6 +39,8 @@ int main(){
     if(mlockall(MCL_CURRENT | MCL_FUTURE) != 0){
         perror("Error from mlockall");
     }
+
+    printf("\n");
 
     for(i = 0; i < NUM_THREADS; ++i){
         id[i] = i;
@@ -54,11 +56,11 @@ int main(){
 
 void *calculate_time(void *arg){
     int value = *((int*)arg);
-    
+
     #ifdef DEBUG
         printf("%d\n", value);
     #endif
-    
+
     int i;
     uint64_t average = 0;
     double final_average;

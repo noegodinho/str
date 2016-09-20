@@ -7,11 +7,14 @@ OBJ = ./obj/func.o
 BIN = ./bin/
 FILE = $(SOURCE)ex1
 TARGET = $(BIN)ex1
+SU = sudo
+EXE = $(BIN)ex1
 
 all: $(TARGET)
 
 $(TARGET): $(FILE).c
-	$(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) $(OBJ) -o $(TARGET)
+	$(SU) $(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) $(OBJ) -o $(TARGET)
+	$(SU) $(EXE)
 
 clean:
 	$(RM) $(TARGET)
