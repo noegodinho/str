@@ -1,12 +1,13 @@
 CC = gcc
-CFLAGS = -Wall -O2 -D_REENTRANT -lrt
+CFLAGS = -Wall -O2 -D_REENTRANT -lrt -lm
 CCFLAGS ?= -lpthread
 SOURCE = ./src/
 DEPS = ./lib/func.h
 OBJ = ./obj/func.o
 BIN = ./bin/
-FILE = $(SOURCE)ex1
-TARGET = $(BIN)ex1
+NAME = ex1
+FILE = $(SOURCE)$(NAME)
+TARGET = $(BIN)$(NAME)
 SU = sudo
 
 all: $(TARGET)
