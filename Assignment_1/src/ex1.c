@@ -11,6 +11,7 @@
 
 #define NUM_THREADS 3
 #define NUM_EXEC 100
+#define BILLION 1000000000L
 
 //#define DEBUG
 
@@ -57,51 +58,60 @@ int main(){
 void *func1(void *arg){
     priorities(99);
     struct timespec start, end;
-    double average = 0;
+    uint64_t average = 0;
+    double final_average;
 
     for(int i = 0; i < NUM_EXEC; ++i){
         clock_gettime(CLOCK_MONOTONIC, &start);
         f1(2, 5);
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        average += (end.tv_sec - start.tv_sec);
+        average += (BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec);
     }
 
-    printf("Time f1: %f\n", average / NUM_EXEC);
+    final_average = (double)average / BILLION;
+
+    printf("Time f1: %f\n", final_average / NUM_EXEC);
     pthread_exit(NULL);
 }
 
 void *func2(void *arg){
     priorities(99);
     struct timespec start, end;
-    double average = 0;
+    uint64_t average = 0;
+    double final_average;
 
     for(int i = 0; i < NUM_EXEC; ++i){
         clock_gettime(CLOCK_MONOTONIC, &start);
         f2(2, 5);
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        average += (end.tv_sec - start.tv_sec);
+        average += (BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec);
     }
 
-    printf("Time f2: %f\n", average / NUM_EXEC);
+    final_average = (double)average / BILLION;
+
+    printf("Time f2: %f\n", final_average / NUM_EXEC);
     pthread_exit(NULL);
 }
 
 void *func3(void *arg){
     priorities(99);
     struct timespec start, end;
-    double average = 0;
+    uint64_t average = 0;
+    double final_average;
 
     for(int i = 0; i < NUM_EXEC; ++i){
         clock_gettime(CLOCK_MONOTONIC, &start);
         f3(2, 5);
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        average += (end.tv_sec - start.tv_sec);
+        average += (BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec);
     }
 
-    printf("Time f3: %f\n", average / NUM_EXEC);
+    final_average = (double)average / BILLION;
+
+    printf("Time f3: %f\n", final_average / NUM_EXEC);
     pthread_exit(NULL);
 }
 
