@@ -17,13 +17,15 @@
 
 /* PL2, G5 */
 
-void *calculate_time(void *arg);
+void *func1(void *arg);
+void *func2(void *arg);
+void *func3(void *arg);
+void priorities(int priority_number);
 
 int main(){
     cpu_set_t set;
     pthread_t thread_id[NUM_THREADS];
     int i;
-    int id[NUM_THREADS];
 
     /* clear cpu mask */
     CPU_ZERO(&set);
@@ -42,10 +44,9 @@ int main(){
 
     printf("\n");
 
-    for(i = 0; i < NUM_THREADS; ++i){
-        id[i] = i;
-        pthread_create(&thread_id[i], NULL, &calculate_time, &id[i]);
-    }
+    pthread_create(&thread_id[0], NULL, &func1, NULL);
+    pthread_create(&thread_id[1], NULL, &func2, NULL);
+    pthread_create(&thread_id[2], NULL, &func3, NULL);
 
     for(i = 0; i < NUM_THREADS; ++i){
         pthread_join(thread_id[i], NULL);
@@ -54,43 +55,64 @@ int main(){
     return 0;
 }
 
-void *calculate_time(void *arg){
-    int value = *((int*)arg);
-
-    #ifdef DEBUG
-        printf("%d\n", value);
-    #endif
-
-    int i;
-    uint64_t average = 0;
-    double final_average;
+void *func1(void *arg){
+    priorities(99);
     struct timespec start, end;
+    double average = 0;
 
-    for(i = 0; i < NUM_EXEC; ++i){
-        switch(value){
-            case 0:
-                clock_gettime(CLOCK_REALTIME, &start);
-                f1(2, 5);
-                clock_gettime(CLOCK_REALTIME, &end);
-                break;
-            case 1:
-                clock_gettime(CLOCK_REALTIME, &start);
-                f2(2, 5);
-                clock_gettime(CLOCK_REALTIME, &end);
-                break;
-            case 2:
-                clock_gettime(CLOCK_REALTIME, &start);
-                f3(2, 5);
-                clock_gettime(CLOCK_REALTIME, &end);
-                break;
-        }
+    for(int i = 0; i < NUM_EXEC; ++i){
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        f1(2, 5);
+        clock_gettime(CLOCK_MONOTONIC, &end);
 
-        average += (BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec);
+        average += (end.tv_sec - start.tv_sec);
     }
 
-    /* convert nanoseconds to seconds */
-    final_average = (double)average / BILLION;
-
-    printf("Time f%d: %lf\n", value, final_average / NUM_EXEC);
+    printf("Time f1: %f\n", average / NUM_EXEC);
     pthread_exit(NULL);
+}
+
+void *func2(void *arg){
+    priorities(99);
+    struct timespec start, end;
+    double average = 0;
+
+    for(int i = 0; i < NUM_EXEC; ++i){
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        f2(2, 5);
+        clock_gettime(CLOCK_MONOTONIC, &end);
+
+        average += (end.tv_sec - start.tv_sec);
+    }
+
+    printf("Time f2: %f\n", average / NUM_EXEC);
+    pthread_exit(NULL);
+}
+
+void *func3(void *arg){
+    priorities(99);
+    struct timespec start, end;
+    double average = 0;
+
+    for(int i = 0; i < NUM_EXEC; ++i){
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        f3(2, 5);
+        clock_gettime(CLOCK_MONOTONIC, &end);
+
+        average += (end.tv_sec - start.tv_sec);
+    }
+
+    printf("Time f3: %f\n", average / NUM_EXEC);
+    pthread_exit(NULL);
+}
+
+void priorities(int priority_number){
+    pthread_t id = pthread_self();
+    struct sched_param param;
+
+    param.sched_priority = priority_number;
+
+    if(pthread_setschedparam(id, SCHED_FIFO, &param) != 0){
+        perror("Error from pthread_setschedparam");
+    }
 }
