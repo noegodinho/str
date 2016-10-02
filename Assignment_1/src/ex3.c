@@ -61,9 +61,9 @@ int main(){
 
     /* Inicio = indica que as threds só vão iniciar
     2 segundos depois da hora obtida do sistema,
-    e terminam 2 segundos depois de terem iniciado */
+    e terminam 1 segundos depois de terem iniciado */
     relogio.Inicio = hora_sistema_ms() + 2000;
-    relogio.Fim = relogio.Inicio + 4000;
+    relogio.Fim = relogio.Inicio + 3000;
 
     pthread_create(&thread_id[0], NULL, &func1, NULL);
     pthread_create(&thread_id[1], NULL, &func2, NULL);
@@ -95,7 +95,9 @@ void *func1(void *arg){
   
         tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
 
-        seconds=(double)tempo_comp_1/(1e3); /* Conversão para segundos */
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds=(double)tempo_comp_1/(1e3);
         printf("Tarefa 1: %f s\n",seconds);
 
         if(tempo_comp_1 < P1_Activacao) ++j;
@@ -122,7 +124,9 @@ void *func2(void *arg){
 
         tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
 
-        seconds = (double)tempo_comp_2/(1e3); /* Conversão para segundos */
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds = (double)tempo_comp_2/(1e3);
         printf("Tarefa 2: %f s\n",seconds);
 
         if(tempo_comp_2 < P2_Activacao) ++j;
@@ -149,7 +153,9 @@ void *func3(void *arg){
         
         tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;
         
-        seconds = (double)tempo_comp_3/(1e3); /* Conversão para segundos */
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds = (double)tempo_comp_3/(1e3);
         printf("Tarefa 3: %f s\n",seconds);
 
         if(tempo_comp_3 < P3_Activacao) ++j;
@@ -181,9 +187,11 @@ long int hora_sistema_ms(){
 	struct timespec tempo_actual;
 	clock_gettime(CLOCK_MONOTONIC,&tempo_actual);
 
-	ms = (tempo_actual.tv_nsec/1e6); /* Converte para milisegundos */
+	/* Converte para milisegundos
+	1ns=1*10^-9, para milisegundos fica (1*10^-9)*(1*10^-6)=1*10^-3 */
+	ms = (tempo_actual.tv_nsec/1e6);
 
-	/* É adicionado os milisegundos ao segundos para ser mais preciso
+	/* ## É adicionado os milisegundos ao segundos para ser mais preciso
 	Exemplo: 1*1e3=1000, então o tempo será 1+milisegundos que ficam nas
 	3 ultimas casas */
 	precisao_s=(tempo_actual.tv_sec*1e3)+ms; 
@@ -199,8 +207,9 @@ void sleep_thr(long int times){
 
 	/* Converte para nanosegundos
 	Nesta linha, toma-se as 3 ultimas casas, através do resto da divisão,
-	que vêm dos milisegundos calculados na linha 169, e depois é convertido para
-	nanosegundos */
+	que vêm dos milisegundos calculados na linha ##, e depois é convertido para
+	nanosegundos. Como para converter para ms dividi ns/1e6, então para converter
+	novamente para nanosegundos é só multiplicar por 1e6 */
 	t.tv_nsec=(times%1000)*(1e6);
 
 	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
