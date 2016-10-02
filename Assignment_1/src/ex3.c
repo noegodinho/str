@@ -17,7 +17,7 @@
 /* Definição dos períodos de activação de cada tarefa em ms */
 #define P1_Activacao 100
 #define P2_Activacao 200
-#define P3_Activacao 230
+#define P3_Activacao 300
 
 /* Estrutura com o tempo de execução das tarefas */
 struct tempo_execucao{
