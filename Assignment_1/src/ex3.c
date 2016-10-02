@@ -25,9 +25,6 @@ struct tempo_execucao{
 	long int Inicio,Fim;
 }relogio;
 
-
-//#define DEBUG
-
 /* PL2, G5 */
 
 void *func1(void *arg);
