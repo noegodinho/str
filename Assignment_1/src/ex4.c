@@ -13,11 +13,12 @@
 #include "../lib/func.h"
 
 #define NUM_THREADS 3
+#define BILLION 1000000000L
 
 /* Definição dos períodos de activação de cada tarefa em ms */
 #define P1_Activacao 100
 #define P2_Activacao 200
-#define P3_Activacao 230
+#define P3_Activacao 300
 
 /* Estrutura com o tempo de execução das tarefas */
 struct tempo_execucao{
@@ -29,7 +30,6 @@ struct tempo_execucao{
 void *func1(void *arg);
 void *func2(void *arg);
 void *func3(void *arg);
-
 void priorities(int);
 long int hora_sistema_ms();
 void sleep_thr(long int);
@@ -84,26 +84,28 @@ void *func1(void *arg){
     priorities(99);
 
     int i,j;
+    double seconds;
     long int tempo_exe_1,tempo_comp_1;
     tempo_exe_1 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_1 < relogio.Fim;i++){
-
+    for(i=0,j=0; tempo_exe_1 < relogio.Fim;++i){
         sleep_thr(tempo_exe_1);
 
         f1(2, 5);
   
         tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
 
-        printf("Tarefa 1: %ld \tms\n",tempo_comp_1);
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds=(double)tempo_comp_1/(1e3);
+        printf("Tarefa 1: %f s\n",seconds);
 
-        if(tempo_comp_1 < P1_Activacao) j++;
+        if(tempo_comp_1 < P1_Activacao) ++j;
 
-        tempo_exe_1 += P1_Activacao;
+        tempo_exe_1 += P1_Activacao; 
     }
-
     sleep_thr(tempo_exe_1+100); /* Espera que todas as threads terminem */
-    printf("\nPercentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(100)*j/i);
     pthread_exit(NULL);
 }
 
@@ -111,26 +113,28 @@ void *func2(void *arg){
     priorities(98);
 
     int i,j;
+    double seconds;
     long int tempo_exe_2,tempo_comp_2;
     tempo_exe_2 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_2 < relogio.Fim;i++){
-
+    for(i = 0,j = 0; tempo_exe_2 < relogio.Fim; ++i){
         sleep_thr(tempo_exe_2);
 
         f2(2, 5);
 
         tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
 
-        printf("Tarefa 2: %ld \tms\n",tempo_comp_2);
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds = (double)tempo_comp_2/(1e3);
+        printf("Tarefa 2: %f s\n",seconds);
 
-        if(tempo_comp_2 < P2_Activacao) j++;
+        if(tempo_comp_2 < P2_Activacao) ++j;
 
-        tempo_exe_2 += P2_Activacao;
+        tempo_exe_2 += P2_Activacao; 
     }
-
     sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */
-    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(100)*j/i);
     pthread_exit(NULL);
 }
 
@@ -138,27 +142,29 @@ void *func3(void *arg){
     priorities(97);
     
     int i,j;
+    double seconds;
     long int tempo_exe_3,tempo_comp_3;
     tempo_exe_3 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_3 < relogio.Fim;i++){
-    	
+    for(i = 0,j=0; tempo_exe_3 < relogio.Fim ; ++i){
     	sleep_thr(tempo_exe_3);
         
         f3(2, 5);
         
         tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;
         
-        printf("Tarefa 3: %ld \tms\n",tempo_comp_3);
+        /* Conversão para segundos
+        1 segundos = 1*10^-3 */
+        seconds = (double)tempo_comp_3/(1e3);
+        printf("Tarefa 3: %f s\n",seconds);
 
-        if(tempo_comp_3 < P3_Activacao) j++;
+        if(tempo_comp_3 < P3_Activacao) ++j;
 
         /* É Calculado o próximo período de activação */
         tempo_exe_3 += P3_Activacao;
     }
-
     sleep_thr(tempo_exe_3+100); /* Espera que todas as threads terminem */
-    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
+    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(100)*j/i);
     pthread_exit(NULL);
 }
 
@@ -176,22 +182,21 @@ void priorities(int priority_number){
 /* Funão que recebe a hora do sistema com clock_gettime e */
 /* devolve o resultado em milisegundos */
 long int hora_sistema_ms(){
-	long int ms,precisao_ms;
+	long int ms,precisao_s;
 
 	struct timespec tempo_actual;
 	clock_gettime(CLOCK_MONOTONIC,&tempo_actual);
 
 	/* Converte para milisegundos
 	1ns=1*10^-9, para milisegundos fica (1*10^-9)*(1*10^-6)=1*10^-3 */
-	ms = tempo_actual.tv_nsec/1e6;
+	ms = (tempo_actual.tv_nsec/1e6);
 
-	/* ## Conversão de segundos para milisegundos, 1 seg = 1*10^3 ms
-	É adicionado os milisegundos ao segundos para ser mais preciso
+	/* ## É adicionado os milisegundos ao segundos para ser mais preciso
 	Exemplo: 1*1e3=1000, então o tempo será 1+milisegundos que ficam nas
 	3 ultimas casas */
-	precisao_ms=(tempo_actual.tv_sec*1e3)+ms; 
+	precisao_s=(tempo_actual.tv_sec*1e3)+ms; 
 	
-	return precisao_ms;
+	return precisao_s;
 }
 
 /* Funão que recebe que as threads vão adormecer e */
