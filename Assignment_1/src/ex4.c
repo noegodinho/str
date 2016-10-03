@@ -41,14 +41,14 @@ struct Dados_thread{
     de computação */
     long int tempo_execucao;
     long int tempo_comp;
-}Dados[3];
 
-/* Estrutura com as prioridades das tarefas */
-struct Prioridades{
-    int Prioridade1;
-    int Prioridade2;
-    int Prioridade3;
-}num_prioridade;
+    /* Prioridades das tarefas */
+    int Prioridade;
+
+    /* Usada para fazermos a verificação se a mudança de prioridade
+    foi feita  ou não */
+    bool mudanca_prioridade;
+}Dados[3];
 
 /*  Funções */
 void *func1(void *arg);
@@ -98,9 +98,9 @@ int main(){
     relogio.Fim1 = relogio.Inicio1 + 2000;
 
     /* Atribuição de prioridades */
-    num_prioridade.Prioridade1=99;
-    num_prioridade.Prioridade2=98;
-    num_prioridade.Prioridade3=97;
+    Dados[0].Prioridade=99;
+    Dados[1].Prioridade=98;
+    Dados[2].Prioridade=97;
 
     pthread_create(&thread_id[0], NULL, &func1, NULL);
     pthread_create(&thread_id[1], NULL, &func2, NULL);
@@ -118,40 +118,42 @@ int main(){
 }
 
 void *func1(void *arg){
-    priorities(num_prioridade.Prioridade1);
+    priorities(Dados[0].Prioridade);
 
-    int i=0,j=0;
-    bool mudanca_prioridade_ativada = false;
-    long int tempo_exe_1,tempo_comp_1;
-    tempo_exe_1 = relogio.Inicio;
+    Dados[0].num_real_execucao=0;
+    Dados[0].num_execucao=0;
+    Dados[0].tempo_execucao = relogio.Inicio;
+    Dados[0].mudanca_prioridade=false;
 
-    for(; tempo_exe_1 < relogio.Fim1 ;){
+    for(; Dados[0].tempo_execucao < relogio.Fim1 ;){
 
-        sleep_thr(tempo_exe_1);
+        sleep_thr(Dados[0].tempo_execucao);
 
         f1(2, 5);
   
-        tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
+        Dados[0].tempo_comp =  hora_sistema_ms() - Dados[0].tempo_execucao;
 
-        printf("Tarefa 1: %ld \tms\n",tempo_comp_1);
-        i++;
+        printf("Tarefa 1: %ld \tms\n",Dados[0].tempo_comp);
+        Dados[0].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_1 < P1_Activacao) j++;
+        if(Dados[0].tempo_comp < P1_Activacao) Dados[0].num_execucao++;
 
         /* Calculo do proximo período de activação da tarefa */
-        tempo_exe_1 += P1_Activacao;
+        Dados[0].tempo_execucao += P1_Activacao;
 
-        if(tempo_exe_1 > relogio.Fim && !mudanca_prioridade_ativada){
-            sleep_thr(tempo_exe_1 + 100);   /* Espera que todas as threads terminem */
-            outra_func();                   /* Para imprimir mudança de linha */
-            printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+        if(Dados[0].tempo_execucao > relogio.Fim && !Dados[0].mudanca_prioridade){
+            sleep_thr(Dados[0].tempo_execucao + 100);   /* Espera que todas as threads terminem */
+            outra_func();                               /* Para imprimir mudança de linha */
 
-            tempo_exe_1 = relogio.Inicio1;
-            num_prioridade.Prioridade1 = 97;
-            priorities(num_prioridade.Prioridade1);
-            mudanca_prioridade_ativada = true;
-            j=i=0;
+            Dados[0].Percentagem = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
+            printf("Percentagem de sucesso da Tarefa 1: %d%%\n",Dados[0].Percentagem);
+
+            Dados[0].tempo_execucao = relogio.Inicio1;
+            Dados[0].Prioridade = 97;
+            priorities(Dados[0].Prioridade);
+            Dados[0].mudanca_prioridade = true;
+            Dados[0].num_execucao=Dados[0].num_real_execucao=0;
 
             /* Para imprimir que foi feita a mudança de prioridade */
             mudanca++;
@@ -159,93 +161,101 @@ void *func1(void *arg){
         }
     }
 
-    sleep_thr(tempo_exe_1+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[0].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+
+    Dados[0].Percentagem = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
+    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",Dados[0].Percentagem);
     pthread_exit(NULL);
 }
 
 void *func2(void *arg){
-    priorities(num_prioridade.Prioridade2);
+    priorities(Dados[1].Prioridade);
 
-    int i=0,j=0;
-    bool mudanca_prioridade_ativada = false;
-    long int tempo_exe_2,tempo_comp_2;
-    tempo_exe_2 = relogio.Inicio;
+    Dados[1].num_real_execucao=0;
+    Dados[1].num_execucao=0;
+    Dados[1].tempo_execucao = relogio.Inicio;
+    Dados[1].mudanca_prioridade=false;
 
-    for(; tempo_exe_2 < relogio.Fim1 ;){
+    for(; Dados[1].tempo_execucao < relogio.Fim1 ;){
 
-        sleep_thr(tempo_exe_2);
+        sleep_thr(Dados[1].tempo_execucao);
 
         f2(2, 5);
 
-        tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
-        printf("Tarefa 2: %ld \tms\n",tempo_comp_2);
-        i++;
+        Dados[1].tempo_comp =  hora_sistema_ms() - Dados[1].tempo_execucao;
+        printf("Tarefa 2: %ld \tms\n",Dados[1].tempo_comp);
+        Dados[1].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_2 < P2_Activacao) j++;
+        if(Dados[1].tempo_comp < P2_Activacao) Dados[1].num_execucao++;
 
-        tempo_exe_2 += P2_Activacao;
+        Dados[1].tempo_execucao += P2_Activacao;
 
-        if(tempo_exe_2 > relogio.Fim && !mudanca_prioridade_ativada){
-            sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */            
-            outra_func();                   /* Para imprimir mudança de linha */
-            printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+        if(Dados[1].tempo_execucao > relogio.Fim && !Dados[1].mudanca_prioridade){
+            sleep_thr(Dados[1].tempo_execucao+100); /* Espera que todas as threads terminem */            
+            outra_func();                           /* Para imprimir mudança de linha */
 
-            tempo_exe_2 = relogio.Inicio1;
-            num_prioridade.Prioridade2 = 98;
-            priorities(num_prioridade.Prioridade2);
-            mudanca_prioridade_ativada = true;
-            j=i=0;
-            
+            Dados[1].Percentagem = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
+            printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados[1].Percentagem);
+
+            Dados[1].tempo_execucao = relogio.Inicio1;
+            Dados[1].Prioridade = 98;
+            priorities(Dados[1].Prioridade);
+            Dados[1].mudanca_prioridade = true;
+            Dados[1].num_execucao=Dados[1].num_real_execucao=0;
+
             /* Para imprimir que foi feita a mudança de prioridade */
             mudanca++;
             outra_func();
         }
     }
 
-    sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[1].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+
+    Dados[1].Percentagem = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
+    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados[1].Percentagem);
 
     pthread_exit(NULL);
 }
 
 void *func3(void *arg){
-    priorities(num_prioridade.Prioridade3);
+    priorities(Dados[2].Prioridade);
     
-    int i=0,j=0;
-    bool mudanca_prioridade_ativada = false;
-    long int tempo_exe_3,tempo_comp_3;
-    tempo_exe_3 = relogio.Inicio;
+    Dados[2].num_real_execucao=0;
+    Dados[2].num_execucao=0;
+    Dados[2].tempo_execucao = relogio.Inicio;
+    Dados[2].mudanca_prioridade=false;
 
-    for(; tempo_exe_3 < relogio.Fim1 ;){
+    for(; Dados[2].tempo_execucao < relogio.Fim1 ;){
     	
-    	sleep_thr(tempo_exe_3);
+    	sleep_thr(Dados[2].tempo_execucao);
         
         f3(2, 5);
         
-        tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;
-        printf("Tarefa 3: %ld \tms\n",tempo_comp_3);
-        i++;
+        Dados[2].tempo_comp =  hora_sistema_ms() - Dados[2].tempo_execucao;
+        printf("Tarefa 3: %ld \tms\n",Dados[2].tempo_comp);
+        Dados[2].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_3 < P3_Activacao) j++;
+        if(Dados[2].tempo_comp < P3_Activacao) Dados[2].num_execucao++;
 
         /* É Calculado o próximo período de activação */
-        tempo_exe_3 += P3_Activacao;
+        Dados[2].tempo_execucao += P3_Activacao;
 
-        if(tempo_exe_3 > relogio.Fim && !mudanca_prioridade_ativada){
-            sleep_thr(tempo_exe_3 + 100);   /* Espera que todas as threads terminem */
-            outra_func();                   /* Para imprimir mudança de linha */
-            printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
+        if(Dados[2].tempo_execucao > relogio.Fim && !Dados[2].mudanca_prioridade){
+            sleep_thr(Dados[2].tempo_execucao + 100);   /* Espera que todas as threads terminem */
+            outra_func();                               /* Para imprimir mudança de linha */
 
-            tempo_exe_3 = relogio.Inicio1;
-            num_prioridade.Prioridade3 = 99;
-            priorities(num_prioridade.Prioridade3);
-            mudanca_prioridade_ativada = true;
-            j=i=0;
+            Dados[2].Percentagem = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
+            printf("Percentagem de sucesso da Tarefa 3: %d%%\n",Dados[2].Percentagem);
+
+            Dados[2].tempo_execucao = relogio.Inicio1;
+            Dados[2].Prioridade = 99;
+            priorities(Dados[2].Prioridade);
+            Dados[2].mudanca_prioridade = true;
+            Dados[2].num_execucao=Dados[2].num_real_execucao=0;
             
             /* Para imprimir que foi feita a mudança de prioridade */
             mudanca++;
@@ -253,9 +263,11 @@ void *func3(void *arg){
         }
     }
 
-    sleep_thr(tempo_exe_3+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[2].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
+
+    Dados[2].Percentagem = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
+    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",Dados[2].Percentagem);
     pthread_exit(NULL);
 }
 

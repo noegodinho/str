@@ -125,7 +125,7 @@ void *func1(void *arg){
     sleep_thr(Dados[0].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
 
-    Dados[0].Percentagem = 100*(Dados[0].num_execucao/Dados[0].num_real_execucao);
+    Dados[0].Percentagem = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
     printf("Percentagem de sucesso da Tarefa 1: %d%%\n",Dados[0].Percentagem);
     pthread_exit(NULL);
 }
@@ -157,7 +157,7 @@ void *func2(void *arg){
     sleep_thr(Dados[1].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
 
-    Dados[1].Percentagem = 100*(Dados[1].num_execucao/Dados[1].num_real_execucao);
+    Dados[1].Percentagem = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
     printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados[1].Percentagem);
     pthread_exit(NULL);
 }
@@ -189,7 +189,7 @@ void *func3(void *arg){
     sleep_thr(Dados[2].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
 
-    Dados[2].Percentagem = 100*(Dados[2].num_execucao/Dados[2].num_real_execucao);
+    Dados[2].Percentagem = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
     printf("Percentagem de sucesso da Tarefa 3: %d%%\n",Dados[2].Percentagem);
     pthread_exit(NULL);
 }
