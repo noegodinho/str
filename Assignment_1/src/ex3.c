@@ -19,6 +19,7 @@
 #define P2_Activacao 200
 #define P3_Activacao 300
 
+/* Definição de variaveis */
 int enter=0;
 
 /* Estrutura com o tempo de execução das tarefas */
