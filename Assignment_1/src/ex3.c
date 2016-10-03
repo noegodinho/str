@@ -235,6 +235,8 @@ void sleep_thr(long int times){
 	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
 }
 
+/* Funcçao usada para fazer a mudança de linha e imprimir
+uma mensagem quando é feita a mudança de prioridade */
 void outra_func(){
     if(enter==0){
         printf("\n");
