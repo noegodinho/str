@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <sys/mman.h>
+#include <stdbool.h>
 #include "../lib/func.h"
 
 #define NUM_THREADS 3
@@ -19,20 +20,31 @@
 #define P2_Activacao 200
 #define P3_Activacao 300
 
+/* Definição de variaveis */
+int enter=0,mudanca=0;
+
 /* Estrutura com o tempo de execução das tarefas */
 struct tempo_execucao{
 	long int Inicio,Fim;
+    long int Inicio1,Fim1;
 }relogio;
 
-/* PL2, G5 */
+/* Estrutura com as prioridades das tarefas */
+struct Prioridades{
+    int Prioridade1;
+    int Prioridade2;
+    int Prioridade3;
+}num_prioridade;
 
+/*  Funções */
 void *func1(void *arg);
 void *func2(void *arg);
 void *func3(void *arg);
 
 void priorities(int);
-long int hora_sistema_ms();
+void outra_func();
 void sleep_thr(long int);
+long int hora_sistema_ms();
 
 int main(){
 	printf("===========================================================\n");
@@ -61,9 +73,20 @@ int main(){
 
     /* Inicio = indica que as threds só vão iniciar
     2 segundos depois da hora obtida do sistema,
-    e terminam 1 segundos depois de terem iniciado */
+    e terminam 2 segundos depois de terem iniciado */
     relogio.Inicio = hora_sistema_ms() + 2000;
-    relogio.Fim = relogio.Inicio + 3000;
+    relogio.Fim = relogio.Inicio + 2000;
+
+    /* Inicio1= indica que as threds só vão iniciar
+    3 segundos depois das threads estarem terminado,
+    e terminam 2 segundos depois de terem iniciado */
+    relogio.Inicio1=relogio.Fim+3000;
+    relogio.Fim1 = relogio.Inicio1 + 2000;
+
+    /* Atribuição de prioridades */
+    num_prioridade.Prioridade1=99;
+    num_prioridade.Prioridade2=98;
+    num_prioridade.Prioridade3=97;
 
     pthread_create(&thread_id[0], NULL, &func1, NULL);
     pthread_create(&thread_id[1], NULL, &func2, NULL);
@@ -81,13 +104,14 @@ int main(){
 }
 
 void *func1(void *arg){
-    priorities(99);
+    priorities(num_prioridade.Prioridade1);
 
-    int i,j;
+    int i=0,j=0;
+    bool mudanca_prioridade_ativada = false;
     long int tempo_exe_1,tempo_comp_1;
     tempo_exe_1 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_1 < relogio.Fim;i++){
+    for(; tempo_exe_1 < relogio.Fim1 ;){
 
         sleep_thr(tempo_exe_1);
 
@@ -96,68 +120,127 @@ void *func1(void *arg){
         tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
 
         printf("Tarefa 1: %ld \tms\n",tempo_comp_1);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_1 < P1_Activacao) j++;
 
+        /* Calculo do proximo período de activação da tarefa */
         tempo_exe_1 += P1_Activacao;
+
+        if(tempo_exe_1 > relogio.Fim && !mudanca_prioridade_ativada){
+            sleep_thr(tempo_exe_1 + 100);   /* Espera que todas as threads terminem */
+            outra_func();                   /* Para imprimir mudança de linha */
+            printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+
+            tempo_exe_1 = relogio.Inicio1;
+            num_prioridade.Prioridade1 = 97;
+            priorities(num_prioridade.Prioridade1);
+            mudanca_prioridade_ativada = true;
+            j=i=0;
+
+            /* Para imprimir que foi feita a mudança de prioridade */
+            mudanca++;
+            outra_func();
+        }
     }
 
     sleep_thr(tempo_exe_1+100); /* Espera que todas as threads terminem */
-    printf("\nPercentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+    outra_func();
+    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
     pthread_exit(NULL);
 }
 
 void *func2(void *arg){
-    priorities(98);
+    priorities(num_prioridade.Prioridade2);
 
-    int i,j;
+    int i=0,j=0;
+    bool mudanca_prioridade_ativada = false;
     long int tempo_exe_2,tempo_comp_2;
     tempo_exe_2 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_2 < relogio.Fim;i++){
+    for(; tempo_exe_2 < relogio.Fim1 ;){
 
         sleep_thr(tempo_exe_2);
 
         f2(2, 5);
 
         tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
-
         printf("Tarefa 2: %ld \tms\n",tempo_comp_2);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_2 < P2_Activacao) j++;
 
         tempo_exe_2 += P2_Activacao;
+
+        if(tempo_exe_2 > relogio.Fim && !mudanca_prioridade_ativada){
+            sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */            
+            outra_func();                   /* Para imprimir mudança de linha */
+            printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+
+            tempo_exe_2 = relogio.Inicio1;
+            num_prioridade.Prioridade2 = 98;
+            priorities(num_prioridade.Prioridade2);
+            mudanca_prioridade_ativada = true;
+            j=i=0;
+            
+            /* Para imprimir que foi feita a mudança de prioridade */
+            mudanca++;
+            outra_func();
+        }
     }
 
     sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */
+    outra_func();
     printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+
     pthread_exit(NULL);
 }
 
 void *func3(void *arg){
-    priorities(97);
+    priorities(num_prioridade.Prioridade3);
     
-    int i,j;
+    int i=0,j=0;
+    bool mudanca_prioridade_ativada = false;
     long int tempo_exe_3,tempo_comp_3;
     tempo_exe_3 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_3 < relogio.Fim;i++){
+    for(; tempo_exe_3 < relogio.Fim1 ;){
     	
     	sleep_thr(tempo_exe_3);
         
         f3(2, 5);
         
         tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;
-        
         printf("Tarefa 3: %ld \tms\n",tempo_comp_3);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_3 < P3_Activacao) j++;
 
         /* É Calculado o próximo período de activação */
         tempo_exe_3 += P3_Activacao;
+
+        if(tempo_exe_3 > relogio.Fim && !mudanca_prioridade_ativada){
+            sleep_thr(tempo_exe_3 + 100);   /* Espera que todas as threads terminem */
+            outra_func();                   /* Para imprimir mudança de linha */
+            printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
+
+            tempo_exe_3 = relogio.Inicio1;
+            num_prioridade.Prioridade3 = 99;
+            priorities(num_prioridade.Prioridade3);
+            mudanca_prioridade_ativada = true;
+            j=i=0;
+            
+            /* Para imprimir que foi feita a mudança de prioridade */
+            mudanca++;
+            outra_func();
+        }
     }
 
     sleep_thr(tempo_exe_3+100); /* Espera que todas as threads terminem */
+    outra_func();
     printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
     pthread_exit(NULL);
 }
@@ -208,4 +291,19 @@ void sleep_thr(long int times){
 	t.tv_nsec=(times%1000)*(1e6);
 
 	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+}
+
+/* Funcçao usada para fazer a mudança de linha e imprimir
+uma mensagem quando é feita a mudança de prioridade */
+void outra_func(){
+    if((enter==0 && mudanca==0) || (enter==1 && mudanca==1)){
+        printf("\n");
+        if(enter==1) enter=-1;
+    }
+
+    if(mudanca==3){
+        printf("\n\n=============Mudanca de Prioridade=============\n\n");
+        mudanca=1;
+        enter=1;
+    }
 }

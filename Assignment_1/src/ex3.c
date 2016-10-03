@@ -19,6 +19,8 @@
 #define P2_Activacao 200
 #define P3_Activacao 300
 
+int enter=0;
+
 /* Estrutura com o tempo de execução das tarefas */
 struct tempo_execucao{
 	long int Inicio,Fim;
@@ -31,8 +33,9 @@ void *func2(void *arg);
 void *func3(void *arg);
 
 void priorities(int);
-long int hora_sistema_ms();
 void sleep_thr(long int);
+void outra_func();
+long int hora_sistema_ms();
 
 int main(){
 	printf("===========================================================\n");
@@ -61,9 +64,9 @@ int main(){
 
     /* Inicio = indica que as threds só vão iniciar
     2 segundos depois da hora obtida do sistema,
-    e terminam 1 segundos depois de terem iniciado */
+    e terminam 2 segundos depois de terem iniciado */
     relogio.Inicio = hora_sistema_ms() + 2000;
-    relogio.Fim = relogio.Inicio + 3000;
+    relogio.Fim = relogio.Inicio + 2000;
 
     pthread_create(&thread_id[0], NULL, &func1, NULL);
     pthread_create(&thread_id[1], NULL, &func2, NULL);
@@ -83,53 +86,59 @@ int main(){
 void *func1(void *arg){
     priorities(99);
 
-    int i,j;
+    int i=0,j=0;
     long int tempo_exe_1,tempo_comp_1;
     tempo_exe_1 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_1 < relogio.Fim;i++){
+    for(; tempo_exe_1 < relogio.Fim ;){
 
         sleep_thr(tempo_exe_1);
 
         f1(2, 5);
   
         tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
-
         printf("Tarefa 1: %ld \tms\n",tempo_comp_1);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_1 < P1_Activacao) j++;
 
+        /* Calculo do proximo período de activação da tarefa */
         tempo_exe_1 += P1_Activacao;
     }
 
     sleep_thr(tempo_exe_1+100); /* Espera que todas as threads terminem */
-    printf("\nPercentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+    outra_func();
+    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
     pthread_exit(NULL);
 }
 
 void *func2(void *arg){
     priorities(98);
 
-    int i,j;
+    int i=0,j=0;
     long int tempo_exe_2,tempo_comp_2;
     tempo_exe_2 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_2 < relogio.Fim;i++){
+    for(; tempo_exe_2 < relogio.Fim ;){
 
         sleep_thr(tempo_exe_2);
 
         f2(2, 5);
 
         tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
-
         printf("Tarefa 2: %ld \tms\n",tempo_comp_2);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_2 < P2_Activacao) j++;
 
+        /* Calculo do proximo período de activação da tarefa */
         tempo_exe_2 += P2_Activacao;
     }
 
     sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */
+    outra_func();
     printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
     pthread_exit(NULL);
 }
@@ -137,27 +146,29 @@ void *func2(void *arg){
 void *func3(void *arg){
     priorities(97);
     
-    int i,j;
+    int i=0,j=0;
     long int tempo_exe_3,tempo_comp_3;
     tempo_exe_3 = relogio.Inicio;
 
-    for(i=0,j=0; tempo_exe_3 < relogio.Fim;i++){
+    for(; tempo_exe_3 < relogio.Fim ;){
     	
     	sleep_thr(tempo_exe_3);
         
         f3(2, 5);
         
-        tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;
-        
+        tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;  
         printf("Tarefa 3: %ld \tms\n",tempo_comp_3);
+        i++;
 
+        /* É incrementado o j para calcular a percentagem de sucesso tarefa */
         if(tempo_comp_3 < P3_Activacao) j++;
 
-        /* É Calculado o próximo período de activação */
+        /* Calculo do proximo período de activação da tarefa */
         tempo_exe_3 += P3_Activacao;
     }
 
     sleep_thr(tempo_exe_3+100); /* Espera que todas as threads terminem */
+    outra_func();
     printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
     pthread_exit(NULL);
 }
@@ -208,4 +219,11 @@ void sleep_thr(long int times){
 	t.tv_nsec=(times%1000)*(1e6);
 
 	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+}
+
+void outra_func(){
+    if(enter==0){
+        printf("\n");
+        enter=1;
+    }
 }
