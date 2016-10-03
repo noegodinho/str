@@ -11,7 +11,7 @@
 
 #define NUM_THREADS 3
 #define NUM_EXEC 100
-#define BILLION 1000000000L
+#define BILLION 1e9
 
 //#define DEBUG
 
