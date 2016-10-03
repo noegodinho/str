@@ -26,6 +26,14 @@ struct tempo_execucao{
 	long int Inicio,Fim;
 }relogio;
 
+struct Dados_thread{
+	int num_real_execucao;
+	int num_execucao;
+	int Percentagem;
+	long int tempo_execucao;
+	long int tempo_comp;
+}Dados[3];
+
 /* PL2, G5 */
 
 void *func1(void *arg);
@@ -86,90 +94,96 @@ int main(){
 void *func1(void *arg){
     priorities(99);
 
-    int i=0,j=0;
-    long int tempo_exe_1,tempo_comp_1;
-    tempo_exe_1 = relogio.Inicio;
+    Dados[0].num_real_execucao=0;
+    Dados[0].num_execucao=0;
+    Dados[0].tempo_execucao = relogio.Inicio;
 
-    for(; tempo_exe_1 < relogio.Fim ;){
+    for(; Dados[0].tempo_execucao < relogio.Fim ;){
 
-        sleep_thr(tempo_exe_1);
+        sleep_thr(Dados[0].tempo_execucao);
 
         f1(2, 5);
   
-        tempo_comp_1 =  hora_sistema_ms() - tempo_exe_1;
-        printf("Tarefa 1: %ld \tms\n",tempo_comp_1);
-        i++;
+        Dados[0].tempo_comp =  hora_sistema_ms() - Dados[0].tempo_execucao;
+        printf("Tarefa 1: %ld \tms\n",Dados[0].tempo_comp);
+        Dados[0].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_1 < P1_Activacao) j++;
+        if(Dados[0].tempo_comp < P1_Activacao) Dados[0].num_execucao++;
 
         /* Calculo do proximo período de activação da tarefa */
-        tempo_exe_1 += P1_Activacao;
+        Dados[0].tempo_execucao += P1_Activacao;
     }
 
-    sleep_thr(tempo_exe_1+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[0].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",(int)(100*j/i));
+
+    Dados[0].Percentagem = 100*(Dados[0].num_execucao/Dados[0].num_real_execucao);
+    printf("Percentagem de sucesso da Tarefa 1: %d%%\n",Dados[0].Percentagem);
     pthread_exit(NULL);
 }
 
 void *func2(void *arg){
     priorities(98);
 
-    int i=0,j=0;
-    long int tempo_exe_2,tempo_comp_2;
-    tempo_exe_2 = relogio.Inicio;
+    Dados[1].num_real_execucao=0;
+    Dados[1].num_execucao=0;
+    Dados[1].tempo_execucao = relogio.Inicio;
 
-    for(; tempo_exe_2 < relogio.Fim ;){
+    for(; Dados[1].tempo_execucao < relogio.Fim ;){
 
-        sleep_thr(tempo_exe_2);
+        sleep_thr(Dados[1].tempo_execucao);
 
         f2(2, 5);
 
-        tempo_comp_2 =  hora_sistema_ms() - tempo_exe_2;
-        printf("Tarefa 2: %ld \tms\n",tempo_comp_2);
-        i++;
+        Dados[1].tempo_comp =  hora_sistema_ms() - Dados[1].tempo_execucao;
+        printf("Tarefa 2: %ld \tms\n",Dados[1].tempo_comp);
+        Dados[1].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_2 < P2_Activacao) j++;
+        if(Dados[1].tempo_comp < P2_Activacao) Dados[1].num_execucao++;
 
         /* Calculo do proximo período de activação da tarefa */
-        tempo_exe_2 += P2_Activacao;
+        Dados[1].tempo_execucao += P2_Activacao;
     }
 
-    sleep_thr(tempo_exe_2+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[1].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",(int)(100*j/i));
+
+    Dados[1].Percentagem = 100*(Dados[1].num_execucao/Dados[1].num_real_execucao);
+    printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados[1].Percentagem);
     pthread_exit(NULL);
 }
 
 void *func3(void *arg){
     priorities(97);
     
-    int i=0,j=0;
-    long int tempo_exe_3,tempo_comp_3;
-    tempo_exe_3 = relogio.Inicio;
+    Dados[2].num_real_execucao=0;
+    Dados[2].num_execucao=0;
+    Dados[2].tempo_execucao = relogio.Inicio;
 
-    for(; tempo_exe_3 < relogio.Fim ;){
+    for(; Dados[2].tempo_execucao < relogio.Fim ;){
     	
-    	sleep_thr(tempo_exe_3);
+    	sleep_thr(Dados[2].tempo_execucao);
         
         f3(2, 5);
         
-        tempo_comp_3 =  hora_sistema_ms() - tempo_exe_3;  
-        printf("Tarefa 3: %ld \tms\n",tempo_comp_3);
-        i++;
+        Dados[2].tempo_comp =  hora_sistema_ms() - Dados[2].tempo_execucao;  
+        printf("Tarefa 3: %ld \tms\n",Dados[2].tempo_comp);
+        Dados[2].num_real_execucao++;
 
         /* É incrementado o j para calcular a percentagem de sucesso tarefa */
-        if(tempo_comp_3 < P3_Activacao) j++;
+        if(Dados[2].tempo_comp < P3_Activacao) Dados[2].num_execucao++;
 
         /* Calculo do proximo período de activação da tarefa */
-        tempo_exe_3 += P3_Activacao;
+        Dados[2].tempo_execucao += P3_Activacao;
     }
 
-    sleep_thr(tempo_exe_3+100); /* Espera que todas as threads terminem */
+    sleep_thr(Dados[2].tempo_execucao+100); /* Espera que todas as threads terminem */
     outra_func();
-    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",(int)(100*j/i));
+
+    Dados[2].Percentagem = 100*(Dados[2].num_execucao/Dados[2].num_real_execucao);
+    printf("Percentagem de sucesso da Tarefa 3: %d%%\n",Dados[2].Percentagem);
     pthread_exit(NULL);
 }
 
