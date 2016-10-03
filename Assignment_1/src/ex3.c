@@ -26,10 +26,16 @@ struct tempo_execucao{
 	long int Inicio,Fim;
 }relogio;
 
+/* Estrutura usada pelas threads para armazenar e usar informações importantes */
 struct Dados_thread{
+	/* Variaveis usadas para calcular a percentagem de sucesso de execuções
+	das threads */
 	int num_real_execucao;
 	int num_execucao;
 	int Percentagem;
+
+	/* Variaveis para o tempo de execução das threads como também o tempo
+	de computação */
 	long int tempo_execucao;
 	long int tempo_comp;
 }Dados[3];
