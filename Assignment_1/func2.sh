@@ -1,3 +1,2 @@
 gcc -c src/ex5.c
-mv ex5.o func2.o
-mv -f func2.o obj/
+mv -f ex5.o obj/func2.o
