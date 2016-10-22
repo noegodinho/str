@@ -1,3 +1,12 @@
+/****************************************************************
+ * Autor: José Manuel C. Noronha
+ * Autor: Noé Godinho
+ * Turma: PL2
+ * Grupo: 5
+ * Ano Lectivo: 2016 - 2017
+ ***************************************************************/
+
+/* Includes, Definições e Notas */
 #define _GNU_SOURCE
 #include <sched.h>
 #include <stdio.h>
@@ -13,20 +22,24 @@
 #define NUM_EXEC 100
 #define BILLION 1e9
 
-/* PL2, G5 */
-
+/* Definiçoes das Funções */
 void *func1(void *arg);
 void *func2(void *arg);
 void *func3(void *arg);
 void priorities(int priority_number);
 
 int main(){
+    printf("===========================================================\n");
+    printf("================== Iniciando o Programa! ==================\n");
+    printf("=========== Sistemas de Tempo Real, PL2, Grupo5 ===========\n");
+    printf("===========================================================\n\n");
+
     cpu_set_t set;
     pthread_t thread_id[NUM_THREADS];
     int i;
 
     /* limpa a máscara do CPU e define a utilização do CPU 0 */
-    CPU_ZERO(&set);    
+    CPU_ZERO(&set);
     CPU_SET(0, &set);
 
     /* restringe a execução ao CPU 0 */
@@ -51,9 +64,14 @@ int main(){
         pthread_join(thread_id[i], NULL);
     }
 
+    printf("\n===========================================================\n");
+  	printf("===================== Fim do Programa! ====================\n");
+  	printf("===========================================================\n");
+
     return 0;
 }
 
+/* Função para thread 1 */
 void *func1(void *arg){
     /* define a prioridade da thread */
     priorities(99);
@@ -61,7 +79,7 @@ void *func1(void *arg){
     uint64_t average = 0;
     double final_average;
 
-    /* 
+    /*
      * ciclo para fazer um determinado nº de execuções
      * e fazer várias execuções por função
      * para obter uma média do tempo de execução
@@ -73,7 +91,7 @@ void *func1(void *arg){
         /* final da execução */
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        /* 
+        /*
          * soma-se o valor obtido para o cálculo posterior da média
          * convertem-se os segundos obtidos para nanosegundos (BILLION = 1e9)
          * para poder realizar a sua soma
@@ -90,6 +108,7 @@ void *func1(void *arg){
     pthread_exit(NULL);
 }
 
+/* Função para thread 2 */
 void *func2(void *arg){
     /* define a prioridade da thread */
     priorities(99);
@@ -97,7 +116,7 @@ void *func2(void *arg){
     uint64_t average = 0;
     double final_average;
 
-    /* 
+    /*
      * ciclo para fazer um determinado nº de execuções
      * e fazer várias execuções por função
      * para obter uma média do tempo de execução
@@ -109,7 +128,7 @@ void *func2(void *arg){
         /* final da execução */
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        /* 
+        /*
          * soma-se o valor obtido para o cálculo posterior da média
          * convertem-se os segundos obtidos para nanosegundos (BILLION = 1e9)
          * para poder realizar a sua soma
@@ -126,6 +145,7 @@ void *func2(void *arg){
     pthread_exit(NULL);
 }
 
+/* Função para thread 3 */
 void *func3(void *arg){
     /* define a prioridade da thread */
     priorities(99);
@@ -133,7 +153,7 @@ void *func3(void *arg){
     uint64_t average = 0;
     double final_average;
 
-    /* 
+    /*
      * ciclo para fazer um determinado nº de execuções
      * e fazer várias execuções por função
      * para obter uma média do tempo de execução
@@ -145,7 +165,7 @@ void *func3(void *arg){
         /* final da execução */
         clock_gettime(CLOCK_MONOTONIC, &end);
 
-        /* 
+        /*
          * soma-se o valor obtido para o cálculo posterior da média
          * convertem-se os segundos obtidos para nanosegundos (BILLION = 1e9)
          * para poder realizar a sua soma
@@ -162,6 +182,7 @@ void *func3(void *arg){
     pthread_exit(NULL);
 }
 
+/* Função que define o valor das prioridades das threads */
 void priorities(int priority_number){
     /* vai buscar o id da thread */
     pthread_t id = pthread_self();

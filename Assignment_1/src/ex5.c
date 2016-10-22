@@ -1,3 +1,11 @@
+/****************************************************************
+ * Autor: José Manuel C. Noronha
+ * Autor: Noé Godinho
+ * Turma: PL2
+ * Grupo: 5
+ * Ano Lectivo: 2016 - 2017
+ ***************************************************************/
+
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -31,13 +39,13 @@ void calculate(double t, char *name){
     while(t_atual < t){
         /* começa o cálculo do tempo */
         clock_gettime(CLOCK_MONOTONIC, &start);
-        
+
         /* realiza umas iterações para ocupar CPU */
         for(int i = 0; i < 100000; ++i){
             ;
         }
 
-        /* termina o cálculo do tempo */ 
+        /* termina o cálculo do tempo */
         clock_gettime(CLOCK_MONOTONIC, &end);
 
         /* converte para nanosegundos os segundos e soma-os aos nanosegundos da estrutura */

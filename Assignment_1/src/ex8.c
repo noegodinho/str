@@ -1,10 +1,18 @@
+/****************************************************************
+ * Autor: José Manuel C. Noronha
+ * Autor: Noé Godinho
+ * Turma: PL2
+ * Grupo: 5
+ * Ano Lectivo: 2016 - 2017
+ ***************************************************************/
+
 #include <time.h>
 #include <pthread.h>
 
 #define MAX_THREADS 3
 #define BILLION 1e9
 
-/* 
+/*
  * estrutura de criação de threads
  * variável com id da thread
  * a prioridade atribuida
@@ -33,7 +41,7 @@ int new_rt_task_make_periodic(int i, int priority, struct timespec start_time, s
     thread_info[i].period = period;
 }
 
-/* 
+/*
  * igual à função anterior, no entanto aplica um delay de início
  */
 int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec start_delay, struct timespec period, int end_time){
@@ -58,7 +66,7 @@ int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec s
     thread_info[i].period = period;
 }
 
-/* 
+/*
  * função que faz parar a thread durante um determinado período
  */
 void new_rt_task_wait_period(){
