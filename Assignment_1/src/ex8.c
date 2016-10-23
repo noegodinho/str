@@ -7,8 +7,6 @@
  ***************************************************************/
 
  /* Includes, Definições e Notas */
- #include <time.h>
- #include <pthread.h>
  #include "../lib/ex8.h"
 
 /*
