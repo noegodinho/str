@@ -158,15 +158,15 @@ void *func1(void *arg){
   Dados[0].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) ;){
-
-		/* Tempo usado para calcular o tempo de computação */
-		Dados[0].time_th = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec;
+  for(int i = 0; i< 100/*hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec)*/ ;++i){
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
 
     f1(2, 5);
+
+		/* Tempo usado para calcular o tempo de computação */
+		Dados[0].time_th = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec - thread_info[0].period.tv_nsec;
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
@@ -178,7 +178,7 @@ void *func1(void *arg){
 		 * de computação */
 		indice_a_ser_incrementado++;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp/CLOCKS_PER_SEC;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -246,7 +246,7 @@ void *func2(void *arg){
   Dados[1].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec) ;){
+  for(int i=0; i<100 /*hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec)*/ ;++i){
 		/* Tempo usado para calcular o tempo de computação */
 		Dados[1].time_th = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
 
@@ -333,7 +333,7 @@ void *func3(void *arg){
   Dados[2].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec) ;){
+  for(int i=0; i<100 /*hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec)*/ ;++i){
 		/* Tempo usado para calcular o tempo de computação */
 		Dados[2].time_th = thread_info[2].start.tv_sec*BILLION + thread_info[2].start.tv_nsec;
 

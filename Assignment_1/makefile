@@ -26,6 +26,6 @@ run_5_6:
 
 run_8_9:
 	@$(CC) -c $(SOURCE)ex8.c	# Cria o filcheiro objecto do ex5.c
-	@mv -f ex8.o $(OBJ2)			# Move o ex5.o para ./obj/ e muda o nome para func2.o
+	@mv -f ex8.o ./obj/				# Move o ex5.o para ./obj/ e muda o nome para func2.o
 	$(SU) $(CC) $(CFLAGS) $(SOURCE)ex9.c $(DEPS) $(DEPS1) $(CCFLAGS) $(OBJ1) $(OBJ2) -o $(BIN)ex8_9
 	@$(SU) $(BIN)ex8_9
