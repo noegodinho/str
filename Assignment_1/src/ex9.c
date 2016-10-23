@@ -158,7 +158,7 @@ void *func1(void *arg){
   Dados[0].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(int i = 0; i< 100/*hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec)*/ ;++i){
+  for(; hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) ;){
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
@@ -177,6 +177,7 @@ void *func1(void *arg){
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
+		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
 		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp/CLOCKS_PER_SEC;
 
@@ -246,7 +247,7 @@ void *func2(void *arg){
   Dados[1].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(int i=0; i<100 /*hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec)*/ ;++i){
+  for(; hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec) ;){
 		/* Tempo usado para calcular o tempo de computação */
 		Dados[1].time_th = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
 
@@ -264,6 +265,7 @@ void *func2(void *arg){
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
+		if(indice_a_ser_incrementado > 5) break;
  		id_thr_imprimir[indice_a_ser_incrementado] = 2;
  		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[1].tempo_comp;
 
@@ -351,6 +353,7 @@ void *func3(void *arg){
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
+		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
 		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp;
 
