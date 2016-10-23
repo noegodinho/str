@@ -32,7 +32,7 @@
 int id_thr_imprimir[INDICE_THR_IMPRIMIR];
 long int tempo_comp_thread_imprimir[INDICE_THR_IMPRIMIR];
 int indice_a_ser_incrementado = -1;
-int confirma_mudanca_thrs = -1;
+int confirma_passagem_thrs = -1;
 struct timespec Inicio;
 struct timespec tempo_inv;
 
@@ -52,8 +52,6 @@ struct Dados_thread{
 
   /* Variaveis para o tempo de computação threads */
   long int tempo_comp;
-
-	long int time_th;
 
   /* Usada para fazermos a verificação se a mudança de prioridade
   foi feita  ou não */
@@ -160,18 +158,18 @@ void *func1(void *arg){
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
   for(; hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) ;){
 
+		/* Tempo usado para calcular o tempo de computação */
+		Dados[0].tempo_comp = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec;
+
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
 
     f1(2, 5);
 
-		/* Tempo usado para calcular o tempo de computação */
-		Dados[0].time_th = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec - thread_info[0].period.tv_nsec;
-
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[0].tempo_comp = hora_sistema_ms() - Dados[0].time_th;
+		Dados[0].tempo_comp = hora_sistema_ms() - Dados[0].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
@@ -179,7 +177,7 @@ void *func1(void *arg){
 		indice_a_ser_incrementado++;
 		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp/CLOCKS_PER_SEC;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -207,7 +205,7 @@ void *func1(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -218,7 +216,7 @@ void *func1(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
 
 			/* Introdução dos dados referente a thred 1 */
@@ -248,8 +246,9 @@ void *func2(void *arg){
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
   for(; hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec) ;){
+
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[1].time_th = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
+		Dados[1].tempo_comp = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
@@ -259,7 +258,7 @@ void *func2(void *arg){
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[0].tempo_comp = hora_sistema_ms() - Dados[0].time_th;
+		Dados[1].tempo_comp = hora_sistema_ms() - Dados[1].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
@@ -295,7 +294,7 @@ void *func2(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -306,7 +305,7 @@ void *func2(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
 
 			/* Introdução dos dados referente a thred 2 */
@@ -335,9 +334,10 @@ void *func3(void *arg){
   Dados[2].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(int i=0; i<100 /*hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec)*/ ;++i){
+  for(; hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec) ;){
+
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[2].time_th = thread_info[2].start.tv_sec*BILLION + thread_info[2].start.tv_nsec;
+		Dados[2].tempo_comp = thread_info[2].start.tv_sec*BILLION + thread_info[2].start.tv_nsec;
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
@@ -347,7 +347,7 @@ void *func3(void *arg){
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[2].tempo_comp = hora_sistema_ms() - Dados[2].time_th;
+		Dados[2].tempo_comp = hora_sistema_ms() - Dados[2].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
@@ -355,7 +355,7 @@ void *func3(void *arg){
 		indice_a_ser_incrementado++;
 		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[2].tempo_comp;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -383,7 +383,7 @@ void *func3(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -394,7 +394,7 @@ void *func3(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
 
 			/* Introdução dos dados referente a thred 2 */
@@ -460,7 +460,8 @@ void imprimir(){
  * funcções rt_task */
 void hora_actual_introducao_thr(){
 	/* Essa condição evita alterações multiplas das threads */
-	if(confirma_mudanca_thrs == -1){
+	if(confirma_passagem_thrs == -1){
+		printf("passou\n");
 		/* Definição do tempo que iniciam as threds, ou seja, as threds
 		 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
 		clock_gettime(CLOCK_MONOTONIC,&Inicio);

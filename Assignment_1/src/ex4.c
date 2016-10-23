@@ -31,7 +31,7 @@
 int id_thr_imprimir[INDICE_THR_IMPRIMIR];
 long int tempo_comp_thread_imprimir[INDICE_THR_IMPRIMIR];
 int indice_a_ser_incrementado = -1;
-int confirma_mudanca_thrs = -1;
+int confirma_passagem_thrs = -1;
 
 /* ms = milisegundos
  * Nos comentários tarefas = threads */
@@ -204,7 +204,7 @@ void *func1(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -212,7 +212,7 @@ void *func1(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
 		}
   }
@@ -293,7 +293,7 @@ void *func2(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -301,7 +301,7 @@ void *func2(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
     }
   }
@@ -382,7 +382,7 @@ void *func3(void *arg){
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
 			 * se confirme, então armazena o valor na tabela */
-			if(confirma_mudanca_thrs == -1){
+			if(confirma_passagem_thrs == -1){
 				/* Valor usado para garantir que deve imprimir que foi feita
 				 * feita a mudança de variável */
 				indice_a_ser_incrementado++;
@@ -390,7 +390,7 @@ void *func3(void *arg){
 
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
-				confirma_mudanca_thrs = 0;
+				confirma_passagem_thrs = 0;
 			}
     }
   }
