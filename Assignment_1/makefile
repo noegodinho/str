@@ -3,9 +3,10 @@ CFLAGS = -Wall -O2 -D_REENTRANT -lrt -lm
 CCFLAGS ?= -lpthread
 SOURCE = ./src/
 DEPS = ./lib/func.h
+DEPS1 = ./lib/ex8.h
 OBJ = ./obj/func.o
 OBJ1 = ./obj/func2.o
-OBJ2 = ./obj/
+OBJ2 = ./obj/ex8.o
 BIN = ./bin/
 NAME = ex7
 FILE = $(SOURCE)$(NAME)
@@ -24,7 +25,7 @@ run_5_6:
 	@$(SU) $(BIN)ex5_6
 
 run_8_9:
-	@$(CC) -c $(SOURCE)ex8.c	# Cria o filcheiro objecto do ex8.c
-	@mv ex8.o $(OBJ2)					# Move o ex8.o e muda o nome para ./obj/
-	$(SU) $(CC) $(CFLAGS) $(SOURCE)ex9.c $(DEPS) $(CCFLAGS) $(OBJ1) $(OBJ2)ex8.o -o $(BIN)ex8_9
+	@$(CC) -c $(SOURCE)ex8.c	# Cria o filcheiro objecto do ex5.c
+	@mv -f ex8.o $(OBJ2)			# Move o ex5.o para ./obj/ e muda o nome para func2.o
+	$(SU) $(CC) $(CFLAGS) $(SOURCE)ex9.c $(DEPS) $(DEPS1) $(CCFLAGS) $(OBJ1) $(OBJ2) -o $(BIN)ex8_9
 	@$(SU) $(BIN)ex8_9

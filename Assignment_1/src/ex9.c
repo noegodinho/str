@@ -150,7 +150,7 @@ int main(){
 /* Função para thread 1 */
 void *func1(void *arg){
 	/* define a prioridade da thread */
-	priorities(info_th[0].priority);
+	priorities(thread_info[0].priority);
 
 	/* Inicialização das variaveis */
   Dados[0].num_real_execucao=0;
@@ -160,10 +160,10 @@ void *func1(void *arg){
   Dados[0].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (info_th[0].end.tv_sec*BILLION + info_th[0].end.tv_nsec) ;){
+  for(; hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) ;){
 
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[0].time_th = info_th[0].start.tv_sec*BILLION + info_th[0].start.tv_nsec;
+		Dados[0].time_th = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec;
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
@@ -189,12 +189,12 @@ void *func1(void *arg){
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[0].tempo_comp < info_th[0].period.tv_nsec) Dados[0].num_execucao++;
+    if(Dados[0].tempo_comp < thread_info[0].period.tv_nsec) Dados[0].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (info_th[0].end.tv_sec*BILLION + info_th[0].end.tv_nsec) && !Dados[0].mudanca_prioridade){
+    if(hora_sistema_ms() > (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) && !Dados[0].mudanca_prioridade){
 			/* Espera que todas as threads terminem */
 			new_rt_task_wait_period();
 			sleep_thr(Dados[0].tempo_execucao + 100);
