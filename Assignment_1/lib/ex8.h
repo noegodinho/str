@@ -1,3 +1,12 @@
+/****************************************************************
+ * Autor: José Manuel C. Noronha
+ * Autor: Noé Godinho
+ * Turma: PL2
+ * Grupo: 5
+ * Ano Lectivo: 2016 - 2017
+ ***************************************************************/
+
+/* Includes, Definições e Notas */
 #include <time.h>
 #include <pthread.h>
 
