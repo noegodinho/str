@@ -33,6 +33,8 @@ int id_thr_imprimir[INDICE_THR_IMPRIMIR];
 long int tempo_comp_thread_imprimir[INDICE_THR_IMPRIMIR];
 int indice_a_ser_incrementado = -1;
 int confirma_mudanca_thrs = -1;
+struct timespec Inicio;
+struct timespec tempo_inv;
 
 /* ms = milisegundos
  * Nos comentários tarefas = threads */
@@ -51,11 +53,11 @@ struct Dados_thread{
   /* Variaveis para o tempo de computação threads */
   long int tempo_comp;
 
+	long int time_th;
+
   /* Usada para fazermos a verificação se a mudança de prioridade
   foi feita  ou não */
   bool mudanca_prioridade;
-
-	long int time_th;
 }Dados[3];
 
 /* Definiçoes das Funções */
@@ -90,8 +92,6 @@ int main(){
       perror("Error from mlockall");
   }
 
-	struct timespec Inicio;
-
 	/* Definição dos periodos
 	 * 1ms = 1*10^-3, assim convertendo para nanosegundos temos
 	 * que multiplicar por 1*10^-6 para o resultado ser 1*10^-9,
@@ -112,20 +112,19 @@ int main(){
 	clock_gettime(CLOCK_MONOTONIC,&Inicio);
 	Inicio.tv_sec += 2;
 
+	/* O tempo para inverter as prioridades é feito 2 segundos depois de
+	 * as threads iniciarem */
+	tempo_inv.tv_sec = Inicio.tv_sec + 2;
+	tempo_inv.tv_nsec = Inicio.tv_nsec;
+
 	/* Introdução dos dados referente a thred 1 */
-	new_rt_task_make_periodic(0 , 99, Inicio, Dados[0].Periodo, 2);
+	new_rt_task_make_periodic(0, 99, Inicio, Dados[0].Periodo, 3);
 	/* Introdução dos dados referente a thred 2 */
-	new_rt_task_make_periodic(1 , 98, Inicio, Dados[1].Periodo, 2);
+	new_rt_task_make_periodic(1, 98, Inicio, Dados[1].Periodo, 3);
 	/* Introdução dos dados referente a thred 3 */
-	new_rt_task_make_periodic(2 , 97, Inicio, Dados[2].Periodo, 2);
+	new_rt_task_make_periodic(2, 97, Inicio, Dados[2].Periodo, 3);
 
 	//new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec period, int end_time)
-
-  /* Inicio1= indica que as threds só vão iniciar
-   * 3 segundos depois das threads estarem terminado,
-   * e terminam 2 segundos depois de terem iniciado
-  relogio.Inicio1=relogio.Fim+3000;
-  relogio.Fim1 = relogio.Inicio1 + 2000; */
 
 	/* cria as threads */
   pthread_create(&thread_id[0], NULL, &func1, NULL);
@@ -194,19 +193,9 @@ void *func1(void *arg){
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) && !Dados[0].mudanca_prioridade){
-			/* Espera que todas as threads terminem */
-			new_rt_task_wait_period();
-			sleep_thr(Dados[0].tempo_execucao + 100);
-
+    if(hora_sistema_ms() > (tempo_inv[0].end.tv_sec*BILLION + tempo_inv[0].end.tv_nsec) && !Dados[0].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados[0].Percentagem[0] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
-
-			/* Definição do tempo onde as threads devem começar */
-      Dados[0].tempo_execucao = relogio.Inicio1;
-			/* define a prioridade da thread */
-      Dados[0].Prioridade = 97;
-      priorities(Dados[0].Prioridade);
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
@@ -228,11 +217,16 @@ void *func1(void *arg){
 				 * thread o pode fazer */
 				confirma_mudanca_thrs = 0;
 			}
+
+			/* Definição do tempo que iniciam as threds, ou seja, as threds
+			 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
+			clock_gettime(CLOCK_MONOTONIC,&Inicio);
+			Inicio.tv_sec += 2;
+
+			/* Introdução dos dados referente a thred 1 */
+			new_rt_task_make_periodic(0, 97, Inicio, Dados[0].Periodo, 2);
 		}
   }
-
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[0].tempo_execucao+100);
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[0].Percentagem[1] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;

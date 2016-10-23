@@ -217,9 +217,6 @@ void *func1(void *arg){
 		}
   }
 
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[0].tempo_execucao+100);
-
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[0].Percentagem[1] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
 	/* faz exit da thread */
@@ -309,9 +306,6 @@ void *func2(void *arg){
     }
   }
 
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[1].tempo_execucao+100);
-
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[1].Percentagem[1] = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
 	/* faz exit da thread */
@@ -400,9 +394,6 @@ void *func3(void *arg){
 			}
     }
   }
-
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[2].tempo_execucao+100);
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[2].Percentagem[1] = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;

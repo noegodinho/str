@@ -155,9 +155,6 @@ void *func1(void *arg){
     Dados[0].tempo_execucao += P1_Activacao;
   }
 
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[0].tempo_execucao+100);
-
 	/* O calculo da precentagem é feito aqui */
   Dados[0].Percentagem = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
 	/* faz exit da thread */
@@ -207,9 +204,6 @@ void *func2(void *arg){
     Dados[1].tempo_execucao += P2_Activacao;
   }
 
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[1].tempo_execucao+100);
-
 	/* O calculo da precentagem é feito aqui */
   Dados[1].Percentagem = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
   /* faz exit da thread */
@@ -258,9 +252,6 @@ void *func3(void *arg){
     /* Calculo do proximo período de activação da tarefa */
     Dados[2].tempo_execucao += P3_Activacao;
 	}
-
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[2].tempo_execucao+100);
 
 	/* O calculo da precentagem é feito aqui */
   Dados[2].Percentagem = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
