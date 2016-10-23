@@ -1,3 +1,6 @@
+#include <time.h>
+#include <pthread.h>
+
 #define BILLION 1e9
 #define MAX_THREADS 3
 

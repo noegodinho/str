@@ -67,6 +67,7 @@ void *func3(void *arg);
 void priorities(int);
 long int hora_sistema_ms();
 void imprimir();
+void hora_actual_introducao_thr();
 
 int main(){
 	printf("===========================================================\n");
@@ -107,10 +108,8 @@ int main(){
 	Dados[2].Periodo.tv_sec = 0;
 	Dados[2].Periodo.tv_nsec = P3_Activacao * 1e6;
 
-	/* Definição do tempo que iniciam as threds, ou seja, as threds
-	 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
-	clock_gettime(CLOCK_MONOTONIC,&Inicio);
-	Inicio.tv_sec += 2;
+	/* Funcção para obter a hora actual para a thread */
+	hora_actual_introducao_thr();
 
 	/* O tempo para inverter as prioridades é feito 2 segundos depois de
 	 * as threads iniciarem */
@@ -193,7 +192,7 @@ void *func1(void *arg){
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (tempo_inv[0].end.tv_sec*BILLION + tempo_inv[0].end.tv_nsec) && !Dados[0].mudanca_prioridade){
+    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[0].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados[0].Percentagem[0] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
 
@@ -213,18 +212,19 @@ void *func1(void *arg){
 				indice_a_ser_incrementado++;
 				id_thr_imprimir[indice_a_ser_incrementado] = -5;
 
+				/* Funcção para obter a hora actual para a thread */
+				hora_actual_introducao_thr();
+
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
 				confirma_mudanca_thrs = 0;
 			}
 
-			/* Definição do tempo que iniciam as threds, ou seja, as threds
-			 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
-			clock_gettime(CLOCK_MONOTONIC,&Inicio);
-			Inicio.tv_sec += 2;
-
 			/* Introdução dos dados referente a thred 1 */
 			new_rt_task_make_periodic(0, 97, Inicio, Dados[0].Periodo, 2);
+
+			/* define a prioridade da thread */
+			priorities(thread_info[0].priority);
 		}
   }
 
@@ -236,28 +236,29 @@ void *func1(void *arg){
 
 void *func2(void *arg){
 	/* define a prioridade da thread */
-  priorities(Dados[1].Prioridade);
+  priorities(thread_info[1].priority);
 
 	/* Inicialização das variaveis */
   Dados[1].num_real_execucao=0;
   Dados[1].num_execucao=0;
-	/* Definição do tempo onde as threads devem começar */
-  Dados[1].tempo_execucao = relogio.Inicio;
 	/* Variável usada para confirmar que a mudança de prioridade
 	 * não foi feita */
   Dados[1].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; Dados[1].tempo_execucao < relogio.Fim1 ;){
+  for(; hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec) ;){
+		/* Tempo usado para calcular o tempo de computação */
+		Dados[1].time_th = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
+
 		/* A thread adormece até o tempo definido */
-    sleep_thr(Dados[1].tempo_execucao);
+    new_rt_task_wait_period();
 
     f2(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-    Dados[1].tempo_comp =  hora_sistema_ms() - Dados[1].tempo_execucao;
+		Dados[0].tempo_comp = hora_sistema_ms() - Dados[0].time_th;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
@@ -273,26 +274,14 @@ void *func2(void *arg){
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[1].tempo_comp < P2_Activacao) Dados[1].num_execucao++;
-
-		/* Calculo do proximo período de activação da tarefa */
-    Dados[1].tempo_execucao += P2_Activacao;
+    if(Dados[1].tempo_comp < thread_info[1].period.tv_nsec) Dados[1].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(Dados[1].tempo_execucao > relogio.Fim && !Dados[1].mudanca_prioridade){
-			/* Espera que todas as threads terminem */
-			sleep_thr(Dados[1].tempo_execucao+100);
-
+    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[1].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados[1].Percentagem[0] = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
-
-			/* Definição do tempo onde as threads devem começar */
-      Dados[1].tempo_execucao = relogio.Inicio1;
-			/* define a prioridade da thread */
-      Dados[1].Prioridade = 98;
-      priorities(Dados[1].Prioridade);
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
@@ -310,15 +299,21 @@ void *func2(void *arg){
 				indice_a_ser_incrementado++;
 				id_thr_imprimir[indice_a_ser_incrementado] = -5;
 
+				/* Funcção para obter a hora actual para a thread */
+				hora_actual_introducao_thr();
+
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
 				confirma_mudanca_thrs = 0;
 			}
+
+			/* Introdução dos dados referente a thred 2 */
+			new_rt_task_make_periodic(1, 98, Inicio, Dados[1].Periodo, 2);
+
+			/* define a prioridade da thread */
+		  priorities(thread_info[1].priority);
     }
   }
-
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[1].tempo_execucao+100);
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[1].Percentagem[1] = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
@@ -328,28 +323,29 @@ void *func2(void *arg){
 
 void *func3(void *arg){
 	/* define a prioridade da thread */
-  priorities(Dados[2].Prioridade);
+  priorities(thread_info[2].priority);
 
 	/* Inicialização das variaveis */
   Dados[2].num_real_execucao=0;
   Dados[2].num_execucao=0;
-	/* Definição do tempo onde as threads devem começar */
-  Dados[2].tempo_execucao = relogio.Inicio;
 	/* Variável usada para confirmar que a mudança de prioridade
 	 * não foi feita */
   Dados[2].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; Dados[2].tempo_execucao < relogio.Fim1 ;){
+  for(; hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec) ;){
+		/* Tempo usado para calcular o tempo de computação */
+		Dados[2].time_th = thread_info[2].start.tv_sec*BILLION + thread_info[2].start.tv_nsec;
+
 		/* A thread adormece até o tempo definido */
-  	sleep_thr(Dados[2].tempo_execucao);
+    new_rt_task_wait_period();
 
     f3(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-    Dados[2].tempo_comp =  hora_sistema_ms() - Dados[2].tempo_execucao;
+		Dados[2].tempo_comp = hora_sistema_ms() - Dados[2].time_th;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
@@ -365,26 +361,14 @@ void *func3(void *arg){
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[2].tempo_comp < P3_Activacao) Dados[2].num_execucao++;
-
-    /* Calculo do proximo período de activação da tarefa */
-    Dados[2].tempo_execucao += P3_Activacao;
+    if(Dados[2].tempo_comp < thread_info[2].period.tv_nsec) Dados[2].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(Dados[2].tempo_execucao > relogio.Fim && !Dados[2].mudanca_prioridade){
-			/* Espera que todas as threads terminem */
-			sleep_thr(Dados[2].tempo_execucao + 100);
-
+    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[2].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados[2].Percentagem[0] = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
-
-			/* Definição do tempo onde as threads devem começar */
-      Dados[2].tempo_execucao = relogio.Inicio1;
-			/* define a prioridade da thread */
-      Dados[2].Prioridade = 99;
-      priorities(Dados[2].Prioridade);
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
@@ -402,15 +386,21 @@ void *func3(void *arg){
 				indice_a_ser_incrementado++;
 				id_thr_imprimir[indice_a_ser_incrementado] = -5;
 
+				/* Funcção para obter a hora actual para a thread */
+				hora_actual_introducao_thr();
+
 				/* Já foi armazenado o valor, e por isso, mais nenhuma
 				 * thread o pode fazer */
 				confirma_mudanca_thrs = 0;
 			}
+
+			/* Introdução dos dados referente a thred 2 */
+			new_rt_task_make_periodic(2, 99, Inicio, Dados[2].Periodo, 2);
+
+			/* define a prioridade da thread */
+		  priorities(thread_info[2].priority);
     }
   }
-
-	/* Espera que todas as threads terminem */
-  sleep_thr(Dados[2].tempo_execucao+100);
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
   Dados[2].Percentagem[1] = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
@@ -461,4 +451,16 @@ void imprimir(){
 	printf("\nPercentagem de sucesso da Tarefa 1: %d%%\n",Dados[0].Percentagem[1]);
 	printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados[1].Percentagem[1]);
 	printf("Percentagem de sucesso da Tarefa 3: %d%%\n",Dados[2].Percentagem[1]);
+}
+
+/* Funcção para obter a hora actual para introduzir nas
+ * funcções rt_task */
+void hora_actual_introducao_thr(){
+	/* Essa condição evita alterações multiplas das threads */
+	if(confirma_mudanca_thrs == -1){
+		/* Definição do tempo que iniciam as threds, ou seja, as threds
+		 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
+		clock_gettime(CLOCK_MONOTONIC,&Inicio);
+		Inicio.tv_sec += 2;
+	}
 }
