@@ -115,7 +115,7 @@ int main(){
 /* Função para thread 1 */
 void *func1(void *arg){
 	/* define a prioridade da thread */
-  priorities(99);
+  priorities(2);
 
 	/* Inicialização das variaveis */
   Dados[0].num_real_execucao=0;
@@ -167,7 +167,7 @@ void *func1(void *arg){
 /* Função para thread 2 */
 void *func2(void *arg){
 	/* define a prioridade da thread */
-  priorities(99);
+  priorities(2);
 
 	/* Inicialização das variaveis */
   Dados[1].num_real_execucao=0;
@@ -219,7 +219,7 @@ void *func2(void *arg){
 /* Função para thread 3 */
 void *func3(void *arg){
 	/* define a prioridade da thread */
-  priorities(99);
+  priorities(2);
 
 	/* Inicialização das variaveis */
   Dados[2].num_real_execucao=0;

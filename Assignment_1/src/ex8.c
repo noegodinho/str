@@ -6,27 +6,28 @@
  * Ano Lectivo: 2016 - 2017
  ***************************************************************/
 
-#include <time.h>
-#include <pthread.h>
+ /* Includes, Definições e Notas */
+ #include <time.h>
+ #include <pthread.h>
+ #include "../lib/ex8.h"
 
-#define MAX_THREADS 3
-#define BILLION 1e9
+ #define MAX_THREADS 3
 
-/*
- * estrutura de criação de threads
- * variável com id da thread
- * a prioridade atribuida
- * o tempo de início da thread
- * o tempo de fim da thread
- * o período da thread
- */
-struct thread_info{
-    pthread_t tid;
-    int priority;
-    struct timespec start;
-    struct timespec end;
-    struct timespec period;
-}thread_info[MAX_THREADS];
+ /*
+  * estrutura de criação de threads
+  * variável com id da thread
+  * a prioridade atribuida
+  * o tempo de início da thread
+  * o tempo de fim da thread
+  * o período da thread
+  */
+ struct thread_info{
+     pthread_t tid;
+     int priority;
+     struct timespec start;
+     struct timespec end;
+     struct timespec period;
+ }thread_info[MAX_THREADS];
 
 /*
  * função que atribui os valores necessários
