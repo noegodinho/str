@@ -5,6 +5,7 @@ SOURCE = ./src/
 DEPS = ./lib/func.h
 OBJ = ./obj/func.o
 OBJ1 = ./obj/func2.o
+OBJ2 = ./obj/
 BIN = ./bin/
 NAME = ex7
 FILE = $(SOURCE)$(NAME)
@@ -17,6 +18,12 @@ subsystem:
 
 run_5_6:
 	@$(CC) -c $(SOURCE)ex5.c	# Cria o filcheiro objecto do ex5.c
-	@mv -f ex5.o $(OBJ1)			# Move o ex5.o e muda o nome para func2.o
+	@mv -f ex5.o $(OBJ1)			# Move o ex5.o para ./obj/ e muda o nome para func2.o
 	$(SU) $(CC) $(CFLAGS) $(SOURCE)ex4.c $(DEPS) $(CCFLAGS) $(OBJ1) -o $(BIN)ex5_6
 	@$(SU) $(BIN)ex5_6
+
+run_8_9:
+	@$(CC) -c $(SOURCE)ex8.c	# Cria o filcheiro objecto do ex8.c
+	@mv ex8.o $(OBJ2)					# Move o ex8.o e muda o nome para ./obj/
+	$(SU) $(CC) $(CFLAGS) $(SOURCE)ex9.c $(DEPS) $(CCFLAGS) $(OBJ2)ex8.o -o $(BIN)ex8_9
+	@$(SU) $(BIN)ex8_9

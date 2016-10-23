@@ -33,19 +33,19 @@
  * função que atribui os valores necessários
  * para tornar a thread i periódica
  */
-int new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec period, int end_time){
+int new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec periodo, int end_time){
     thread_info[i].priority = priority;
     thread_info[i].start = start_time;
     /* aplica o tempo de início mais o tempo que a thread decorre */
     thread_info[i].end.tv_sec = thread_info[i].start.tv_sec + end_time;
     thread_info[i].end.tv_nsec = thread_info[i].start.tv_nsec;
-    thread_info[i].period = period;
+    thread_info[i].period = periodo;
 }
 
 /*
  * igual à função anterior, no entanto aplica um delay de início
  */
-int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec start_delay, struct timespec period, int end_time){
+int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec start_delay, struct timespec periodo, int end_time){
     struct timespec actual_time;
     /* estrutura para obter o tempo actual */
     clock_gettime(CLOCK_MONOTONIC, &actual_time);
@@ -64,7 +64,7 @@ int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec s
     /* aplica o tempo de início mais o tempo que a thread decorre */
     thread_info[i].end.tv_sec = thread_info[i].start.tv_sec + end_time;
     thread_info[i].end.tv_nsec = thread_info[i].start.tv_nsec;
-    thread_info[i].period = period;
+    thread_info[i].period = periodo;
 }
 
 /*
@@ -82,8 +82,8 @@ void new_rt_task_wait_period(){
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &thread_info[i].start, NULL);
 
             /* adiciona o periodo à thread */
-            thread_info[i].start.tv_sec += period.tv_sec;
-            thread_info[i].start.tv_nsec += period.tv_nsec;
+            thread_info[i].start.tv_sec += thread_info[i].period.tv_sec;
+            thread_info[i].start.tv_nsec += thread_info[i].period.tv_nsec;
 
             /* condição para evitar overflow na variável de nanosegundos */
             if(thread_info[i].start.tv_nsec > BILLION){
