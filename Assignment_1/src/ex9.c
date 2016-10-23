@@ -157,15 +157,16 @@ void *func1(void *arg){
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
   for(; hora_sistema_ms() < (thread_info[indice].end.tv_sec*BILLION + thread_info[indice].end.tv_nsec) ;){
 
+		/* Tempo usado para calcular o tempo de computação */
+		Dados[indice].tempo_comp = thread_info[indice].start.tv_sec*BILLION + thread_info[indice].start.tv_nsec;
+
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
 
     f1(2, 5);
 
-		/* Tempo usado para calcular o tempo de computação */
-		Dados[indice].tempo_comp = thread_info[indice].start.tv_sec*BILLION + thread_info[indice].start.tv_nsec;
-		Dados[indice].tempo_comp -= thread_info[indice].period.tv_nsec;
-		printf("C %ld - H %ld\n", Dados[indice].tempo_comp,hora_sistema_ms());
+		//Dados[indice].tempo_comp -= thread_info[indice].period.tv_nsec;
+		printf("I %ld - C %ld - H %ld\n",Inicio.tv_sec*BILLION+Inicio.tv_nsec, Dados[indice].tempo_comp,hora_sistema_ms());
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
