@@ -62,7 +62,7 @@ struct Dados_thread{
 void *func1(void *arg);
 void *func2(void *arg);
 void *func3(void *arg);
-void priorities(int);
+void priorities();
 long int hora_sistema_ms();
 void imprimir();
 void hora_actual_introducao_thr();
@@ -115,13 +115,11 @@ int main(){
 	tempo_inv.tv_nsec = Inicio.tv_nsec;
 
 	/* Introdução dos dados referente a thred 1 */
-	new_rt_task_make_periodic(0, 99, Inicio, Dados[0].Periodo, 3);
+	new_rt_task_make_periodic(0, 99, Inicio, Dados[0].Periodo, 4);
 	/* Introdução dos dados referente a thred 2 */
-	new_rt_task_make_periodic(1, 98, Inicio, Dados[1].Periodo, 3);
+	new_rt_task_make_periodic(1, 98, Inicio, Dados[1].Periodo, 4);
 	/* Introdução dos dados referente a thred 3 */
-	new_rt_task_make_periodic(2, 97, Inicio, Dados[2].Periodo, 3);
-
-	//new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec period, int end_time)
+	new_rt_task_make_periodic(2, 97, Inicio, Dados[2].Periodo, 4);
 
 	/* cria as threads */
   pthread_create(&thread_id[0], NULL, &func1, NULL);
@@ -145,21 +143,22 @@ int main(){
 
 /* Função para thread 1 */
 void *func1(void *arg){
+	int indice = 0;
 	/* define a prioridade da thread */
-	priorities(thread_info[0].priority);
+	priorities();
 
 	/* Inicialização das variaveis */
-  Dados[0].num_real_execucao=0;
-  Dados[0].num_execucao=0;
+  Dados[indice].num_real_execucao=0;
+  Dados[indice].num_execucao=0;
 	/* Variável usada para confirmar que a mudança de prioridade
 	 * não foi feita */
-  Dados[0].mudanca_prioridade=false;
+  Dados[indice].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[0].end.tv_sec*BILLION + thread_info[0].end.tv_nsec) ;){
+  for(; hora_sistema_ms() < ((thread_info[indice].end.tv_sec*1e3) + (thread_info[indice].end.tv_nsec/1e6)) ;){
 
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[0].tempo_comp = thread_info[0].start.tv_sec*BILLION + thread_info[0].start.tv_nsec;
+		Dados[indice].tempo_comp = (thread_info[indice].start.tv_sec*1e3) + (thread_info[indice].start.tv_nsec/1e6);
 
 		/* A thread adormece até o tempo definido */
     new_rt_task_wait_period();
@@ -169,38 +168,38 @@ void *func1(void *arg){
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[0].tempo_comp = hora_sistema_ms() - Dados[0].tempo_comp;
+
+		Dados[indice].tempo_comp = hora_sistema_ms() - Dados[indice].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
-		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[0].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
 		 * de sucesso tarefa */
-    Dados[0].num_real_execucao++;
+    Dados[indice].num_real_execucao++;
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[0].tempo_comp < thread_info[0].period.tv_nsec) Dados[0].num_execucao++;
+    if(Dados[indice].tempo_comp < (thread_info[indice].period.tv_nsec/1e6)) Dados[indice].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[0].mudanca_prioridade){
+    if(hora_sistema_ms() > ((tempo_inv.tv_sec*1e3) + (tempo_inv.tv_nsec/1e6)) && !Dados[indice].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
-      Dados[0].Percentagem[0] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
+      Dados[indice].Percentagem[0] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
-      Dados[0].mudanca_prioridade = true;
+      Dados[indice].mudanca_prioridade = true;
 
 			/* Reinicia as variaveis usadas para o calculo da percentagem */
-      Dados[0].num_execucao=Dados[0].num_real_execucao=0;
+      Dados[indice].num_execucao=Dados[indice].num_real_execucao=0;
 
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
@@ -220,76 +219,77 @@ void *func1(void *arg){
 			}
 
 			/* Introdução dos dados referente a thred 1 */
-			new_rt_task_make_periodic(0, 97, Inicio, Dados[0].Periodo, 2);
+			new_rt_task_make_periodic(indice, 97, Inicio, Dados[indice].Periodo, 2);
 
 			/* define a prioridade da thread */
-			priorities(thread_info[0].priority);
+			priorities();
 		}
   }
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
-  Dados[0].Percentagem[1] = 100*Dados[0].num_execucao/Dados[0].num_real_execucao;
+  Dados[indice].Percentagem[1] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 	/* faz exit da thread */
   pthread_exit(NULL);
 }
 
 void *func2(void *arg){
+	int indice = 1;
 	/* define a prioridade da thread */
-  priorities(thread_info[1].priority);
+	priorities();
 
 	/* Inicialização das variaveis */
-  Dados[1].num_real_execucao=0;
-  Dados[1].num_execucao=0;
+	Dados[indice].num_real_execucao=0;
+	Dados[indice].num_execucao=0;
 	/* Variável usada para confirmar que a mudança de prioridade
 	 * não foi feita */
-  Dados[1].mudanca_prioridade=false;
+	Dados[indice].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[1].end.tv_sec*BILLION + thread_info[1].end.tv_nsec) ;){
+	for(; hora_sistema_ms() < ((thread_info[indice].end.tv_sec*1e3) + (thread_info[indice].end.tv_nsec/1e6)) ;){
 
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[1].tempo_comp = thread_info[1].start.tv_sec*BILLION + thread_info[1].start.tv_nsec;
+		Dados[indice].tempo_comp = (thread_info[indice].start.tv_sec*1e3) + (thread_info[indice].start.tv_nsec/1e6);
 
 		/* A thread adormece até o tempo definido */
-    new_rt_task_wait_period();
+		new_rt_task_wait_period();
 
-    f2(2, 5);
+		f1(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[1].tempo_comp = hora_sistema_ms() - Dados[1].tempo_comp;
+
+		Dados[indice].tempo_comp = hora_sistema_ms() - Dados[indice].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
-		if(indice_a_ser_incrementado > 5) break;
- 		id_thr_imprimir[indice_a_ser_incrementado] = 2;
- 		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[1].tempo_comp;
+		id_thr_imprimir[indice_a_ser_incrementado] = 1;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
 		 * de sucesso tarefa */
-    Dados[1].num_real_execucao++;
+		Dados[indice].num_real_execucao++;
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[1].tempo_comp < thread_info[1].period.tv_nsec) Dados[1].num_execucao++;
+		if(Dados[indice].tempo_comp < (thread_info[indice].period.tv_nsec/1e6)) Dados[indice].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[1].mudanca_prioridade){
+		if(hora_sistema_ms() > ((tempo_inv.tv_sec*1e3) + (tempo_inv.tv_nsec/1e6)) && !Dados[indice].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
-      Dados[1].Percentagem[0] = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
+			Dados[indice].Percentagem[0] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
-      Dados[1].mudanca_prioridade = true;
+			Dados[indice].mudanca_prioridade = true;
 
 			/* Reinicia as variaveis usadas para o calculo da percentagem */
-      Dados[1].num_execucao=Dados[1].num_real_execucao=0;
+			Dados[indice].num_execucao=Dados[indice].num_real_execucao=0;
 
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
@@ -308,77 +308,78 @@ void *func2(void *arg){
 				confirma_passagem_thrs = 0;
 			}
 
-			/* Introdução dos dados referente a thred 2 */
-			new_rt_task_make_periodic(1, 98, Inicio, Dados[1].Periodo, 2);
+			/* Introdução dos dados referente a thred 1 */
+			new_rt_task_make_periodic(indice, 98, Inicio, Dados[indice].Periodo, 2);
 
 			/* define a prioridade da thread */
-		  priorities(thread_info[1].priority);
-    }
-  }
+			priorities();
+		}
+	}
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
-  Dados[1].Percentagem[1] = 100*Dados[1].num_execucao/Dados[1].num_real_execucao;
+	Dados[indice].Percentagem[1] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 	/* faz exit da thread */
   pthread_exit(NULL);
 }
 
 void *func3(void *arg){
+	int indice = 2;
 	/* define a prioridade da thread */
-  priorities(thread_info[2].priority);
+	priorities();
 
 	/* Inicialização das variaveis */
-  Dados[2].num_real_execucao=0;
-  Dados[2].num_execucao=0;
+	Dados[indice].num_real_execucao=0;
+	Dados[indice].num_execucao=0;
 	/* Variável usada para confirmar que a mudança de prioridade
 	 * não foi feita */
-  Dados[2].mudanca_prioridade=false;
+	Dados[indice].mudanca_prioridade=false;
 
 	/* Ciclo que executa a thread até o tempo definido para a mesma terminar */
-  for(; hora_sistema_ms() < (thread_info[2].end.tv_sec*BILLION + thread_info[2].end.tv_nsec) ;){
+	for(; hora_sistema_ms() < ((thread_info[indice].end.tv_sec*1e3) + (thread_info[indice].end.tv_nsec/1e6)) ;){
 
 		/* Tempo usado para calcular o tempo de computação */
-		Dados[2].tempo_comp = thread_info[2].start.tv_sec*BILLION + thread_info[2].start.tv_nsec;
+		Dados[indice].tempo_comp = (thread_info[indice].start.tv_sec*1e3) + (thread_info[indice].start.tv_nsec/1e6);
 
 		/* A thread adormece até o tempo definido */
-    new_rt_task_wait_period();
+		new_rt_task_wait_period();
 
-    f3(2, 5);
+		f1(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
 		 * iniciou a sua execução */
-		Dados[2].tempo_comp = hora_sistema_ms() - Dados[2].tempo_comp;
+
+		Dados[indice].tempo_comp = hora_sistema_ms() - Dados[indice].tempo_comp;
 
 		/* Valores usados para fazer a impressão das informações das threads
 		 * onde uma delas identifica a thread e a outra recebe o valor do tempo
 		 * de computação */
 		indice_a_ser_incrementado++;
-		if(indice_a_ser_incrementado > 5) break;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[2].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
 		 * de sucesso tarefa */
-    Dados[2].num_real_execucao++;
+		Dados[indice].num_real_execucao++;
 
 		/* É incrementado o num_execucao caso a thread não consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
-    if(Dados[2].tempo_comp < thread_info[2].period.tv_nsec) Dados[2].num_execucao++;
+		if(Dados[indice].tempo_comp < (thread_info[indice].period.tv_nsec/1e6)) Dados[indice].num_execucao++;
 
 		/* Condição que verifica se o tempo de execução da thread chegou ao Fim
 		 * e como também, verifica se a mudança de prioridade
 		 * já foi feita ou não */
-    if(hora_sistema_ms() > (tempo_inv.tv_sec*BILLION + tempo_inv.tv_nsec) && !Dados[2].mudanca_prioridade){
+		if(hora_sistema_ms() > ((tempo_inv.tv_sec*1e3) + (tempo_inv.tv_nsec/1e6)) && !Dados[indice].mudanca_prioridade){
 			/* O calculo da precentagem, antes da mudança é feito aqui */
-      Dados[2].Percentagem[0] = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
+			Dados[indice].Percentagem[0] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 
 			/* Variável usada para confirmar que a mudança de prioridade
 			 * já foi feita, logo não é necessário entrar de novo no if */
-      Dados[2].mudanca_prioridade = true;
+			Dados[indice].mudanca_prioridade = true;
 
 			/* Reinicia as variaveis usadas para o calculo da percentagem */
-      Dados[2].num_execucao=Dados[2].num_real_execucao=0;
+			Dados[indice].num_execucao=Dados[indice].num_real_execucao=0;
 
 			/* Condição usada para verificar se já foi armazendo
 			 * o valor -5 na tabela por outra thread, e caso não
@@ -397,42 +398,68 @@ void *func3(void *arg){
 				confirma_passagem_thrs = 0;
 			}
 
-			/* Introdução dos dados referente a thred 2 */
-			new_rt_task_make_periodic(2, 99, Inicio, Dados[2].Periodo, 2);
+			/* Introdução dos dados referente a thred 1 */
+			new_rt_task_make_periodic(indice, 99, Inicio, Dados[indice].Periodo, 2);
 
 			/* define a prioridade da thread */
-		  priorities(thread_info[2].priority);
-    }
-  }
+			priorities();
+		}
+	}
 
 	/* O calculo da precentagem, depois da mudança é feito aqui */
-  Dados[2].Percentagem[1] = 100*Dados[2].num_execucao/Dados[2].num_real_execucao;
+	Dados[indice].Percentagem[1] = 100*Dados[indice].num_execucao/Dados[indice].num_real_execucao;
 	/* faz exit da thread */
 	pthread_exit(NULL);
 }
 
 /* Função que define o valor das prioridades das threads */
-void priorities(int priority_number){
-	/* vai buscar o id da thread */
-  pthread_t id = pthread_self();
-  struct sched_param param;
+void priorities(){
+	int i;
+	/* função para obter o id da thread */
+	pthread_t tid = pthread_self();
 
-	/* define o valor da prioridade recebido */
-  param.sched_priority = priority_number;
+	/* percorre o array de threads até encontrar a correspondente */
+	for(i = 0; i < NUM_THREADS; ++i){
+		if(thread_info[i].tid == tid){
+			/* vai buscar o id da thread */
+		  pthread_t id = pthread_self();
+		  struct sched_param param;
 
-	/* aplica um escalonamento RMPO */
-  if(pthread_setschedparam(id, SCHED_FIFO, &param) != 0){
-      perror("Error from pthread_setschedparam");
-  }
+			/* define o valor da prioridade recebido */
+		  param.sched_priority = thread_info[i].priority;
+
+			/* aplica um escalonamento RMPO */
+		  if(pthread_setschedparam(id, SCHED_FIFO, &param) != 0){
+				perror("Error from pthread_setschedparam");
+			}
+		}
+	}
 }
 
 /* Funão que recebe a hora do sistema com clock_gettime e
  * devolve esse mesmo tempo obtido */
 long int hora_sistema_ms(){
+	long int ms,precisao_ms;
+
 	struct timespec tempo_actual;
 	clock_gettime(CLOCK_MONOTONIC,&tempo_actual);
 
-	return tempo_actual.tv_sec*BILLION + tempo_actual.tv_nsec;
+	/* Converte para milisegundos.
+	 * 1ns=1*10^-9, para milisegundos fica (1*10^-9)*(1*10^6)=1*10^-3.
+	 * Como os valores estão no formato inteiro long com nove casas, então
+	 * para obtermos as 3 primeiras casas, que representam os mili temos
+	 * que (1*10^9)*(1*10^-6)=1*10^3, ou seja, se 100000000 = ns no formato long
+	 * e aplicarmos a seguinte expressão 100000000 * 10^-6 = 100.
+	 * 100 = ms no formato long */
+	ms = tempo_actual.tv_nsec/1e6;
+
+	/* ## Conversão de segundos para milisegundos, 1 seg = 1*10^3 ms
+	 * É adicionado os milisegundos ao segundos para ser mais preciso
+	 * Exemplo: 1*1e3=1000, então o tempo será 1+milisegundos que ficam nas
+	 * 3 ultimas casas */
+	precisao_ms=(tempo_actual.tv_sec*1e3)+ms;
+
+	return precisao_ms;
 }
 
 /* Funcçao usada para imprimir as informações que foram armazenadas
@@ -461,7 +488,6 @@ void imprimir(){
 void hora_actual_introducao_thr(){
 	/* Essa condição evita alterações multiplas das threads */
 	if(confirma_passagem_thrs == -1){
-		printf("passou\n");
 		/* Definição do tempo que iniciam as threds, ou seja, as threds
 		 * devem iniciar 2 segundos depois do tempo obtido através do sistema */
 		clock_gettime(CLOCK_MONOTONIC,&Inicio);

@@ -7,9 +7,8 @@
  ***************************************************************/
 
 /* Includes, Definições e Notas */
-#include <time.h>
 #include <pthread.h>
-
+#include <time.h>
 #define BILLION 1e9
 #define MAX_THREADS 3
 
