@@ -70,7 +70,6 @@ void new_rt_task_wait_period(){
                 thread_info[i].start.tv_nsec -= BILLION;
                 ++thread_info[i].start.tv_sec;
             }
-
             break;
         }
     }
