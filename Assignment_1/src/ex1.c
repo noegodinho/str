@@ -28,7 +28,7 @@ void *func2(void *arg);
 void *func3(void *arg);
 void priorities(int priority_number);
 
-int main(){
+int main(int argc, char** argv){
     printf("===========================================================\n");
     printf("================== Iniciando o Programa! ==================\n");
     printf("=========== Sistemas de Tempo Real, PL2, Grupo5 ===========\n");

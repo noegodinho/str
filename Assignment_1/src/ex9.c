@@ -67,7 +67,7 @@ long int hora_sistema_ms();
 void imprimir();
 void hora_actual_introducao_thr();
 
-int main(){
+int main(int argc, char** argv){
 	printf("===========================================================\n");
 	printf("================== Iniciando o Programa! ==================\n");
 	printf("=========== Sistemas de Tempo Real, PL2, Grupo5 ===========\n");
