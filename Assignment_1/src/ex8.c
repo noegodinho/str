@@ -13,7 +13,7 @@
  * função que atribui os valores necessários
  * para tornar a thread i periódica
  */
-int new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec periodo, int end_time){
+void new_rt_task_make_periodic(int i, int priority, struct timespec start_time, struct timespec periodo, int end_time){
     thread_info[i].priority = priority;
     thread_info[i].start = start_time;
     /* aplica o tempo de início mais o tempo que a thread decorre */
@@ -25,7 +25,7 @@ int new_rt_task_make_periodic(int i, int priority, struct timespec start_time, s
 /*
  * igual à função anterior, no entanto aplica um delay de início
  */
-int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec start_delay, struct timespec periodo, int end_time){
+void new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec start_delay, struct timespec periodo, int end_time){
     struct timespec actual_time;
     /* estrutura para obter o tempo actual */
     clock_gettime(CLOCK_MONOTONIC, &actual_time);
@@ -50,27 +50,17 @@ int new_rt_task_make_periodic_relative_ns(int i, int priority, struct timespec s
 /*
  * função que faz parar a thread durante um determinado período
  */
-void new_rt_task_wait_period(){
-    int i;
-    /* função para obter o id da thread */
-    pthread_t tid = pthread_self();
+void new_rt_task_wait_period(int i){
+    /* faz sleep à thread até voltar a ser chamada novamente */
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &thread_info[i].start, NULL);
 
-    /* percorre o array de threads até encontrar a correspondente */
-    for(i = 0; i < MAX_THREADS; ++i){
-        if(thread_info[i].tid == tid){
-            /* faz sleep à thread até voltar a ser chamada novamente */
-            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &thread_info[i].start, NULL);
+    /* adiciona o periodo à thread */
+    thread_info[i].start.tv_sec += thread_info[i].period.tv_sec;
+    thread_info[i].start.tv_nsec += thread_info[i].period.tv_nsec;
 
-            /* adiciona o periodo à thread */
-            thread_info[i].start.tv_sec += thread_info[i].period.tv_sec;
-            thread_info[i].start.tv_nsec += thread_info[i].period.tv_nsec;
-
-            /* condição para evitar overflow na variável de nanosegundos */
-            if(thread_info[i].start.tv_nsec > BILLION){
-                thread_info[i].start.tv_nsec -= BILLION;
-                ++thread_info[i].start.tv_sec;
-            }
-            break;
-        }
+    /* condição para evitar overflow na variável de nanosegundos */
+    if(thread_info[i].start.tv_nsec > BILLION){
+        thread_info[i].start.tv_nsec -= BILLION;
+        ++thread_info[i].start.tv_sec;
     }
 }
