@@ -145,7 +145,7 @@ int main(){
 void *func1(void *arg){
 	int indice = 0;
 	/* define a prioridade da thread */
-	priorities();
+	priorities(indice);
 
 	/* Inicialização das variaveis */
   Dados[indice].num_real_execucao=0;
@@ -224,7 +224,7 @@ void *func1(void *arg){
 			new_rt_task_make_periodic(indice, 97, Inicio, Dados[indice].Periodo, 1);
 
 			/* define a prioridade da thread */
-			priorities(0);
+			priorities(indice);
 		}
   	}
 
@@ -237,7 +237,7 @@ void *func1(void *arg){
 void *func2(void *arg){
 	int indice = 1;
 	/* define a prioridade da thread */
-	priorities();
+	priorities(indice);
 
 	/* Inicialização das variaveis */
 	Dados[indice].num_real_execucao=0;
@@ -255,7 +255,7 @@ void *func2(void *arg){
 		/* A thread adormece até o tempo definido */
 		new_rt_task_wait_period(1);
 
-		f1(2, 5);
+		f2(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
@@ -314,7 +314,7 @@ void *func2(void *arg){
 			new_rt_task_make_periodic(indice, 98, Inicio, Dados[indice].Periodo, 1);
 
 			/* define a prioridade da thread */
-			priorities(1);
+			priorities(indice);
 		}
 	}
 
@@ -327,7 +327,7 @@ void *func2(void *arg){
 void *func3(void *arg){
 	int indice = 2;
 	/* define a prioridade da thread */
-	priorities();
+	priorities(indice);
 
 	/* Inicialização das variaveis */
 	Dados[indice].num_real_execucao=0;
@@ -345,7 +345,7 @@ void *func3(void *arg){
 		/* A thread adormece até o tempo definido */
 		new_rt_task_wait_period(2);
 
-		f1(2, 5);
+		f3(2, 5);
 
 		/* Calculo do tempo de computação da thread, através da diferença
 		 * entre a hora actual do sistema com o tempo quando a thread
@@ -404,7 +404,7 @@ void *func3(void *arg){
 			new_rt_task_make_periodic(indice, 99, Inicio, Dados[indice].Periodo, 1);
 
 			/* define a prioridade da thread */
-			priorities(2);
+			priorities(indice);
 		}
 	}
 
