@@ -178,7 +178,7 @@ void *func1(void *arg){
 		 * de computação */
 		indice_a_ser_incrementado++;
 		id_thr_imprimir[indice_a_ser_incrementado] = 1;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp/CLOCKS_PER_SEC;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -268,7 +268,7 @@ void *func2(void *arg){
 		 * de computação */
 		indice_a_ser_incrementado++;
 		id_thr_imprimir[indice_a_ser_incrementado] = 2;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp/CLOCKS_PER_SEC;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -358,7 +358,7 @@ void *func3(void *arg){
 		 * de computação */
 		indice_a_ser_incrementado++;
 		id_thr_imprimir[indice_a_ser_incrementado] = 3;
-		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp;
+		tempo_comp_thread_imprimir[indice_a_ser_incrementado] = Dados[indice].tempo_comp/CLOCKS_PER_SEC;
 
 		/* Variável usada para calcular a percentagem do numero de vezes que a
 		 * thread cumpriu, ou nao, a meta. Ou seja, para calcular a percentagem
@@ -418,7 +418,7 @@ void *func3(void *arg){
 void priorities(int i){
 	pthread_t id = pthread_self();
 	struct sched_param param;
-	
+
 	/* define o valor da prioridade recebido */
 	param.sched_priority = thread_info[i].priority;
 
