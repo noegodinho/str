@@ -277,7 +277,7 @@ void priorities(int priority_number){
 /* Funão que recebe a hora do sistema com clock_gettime e
  * devolve o resultado em milisegundos */
 long int hora_sistema_ms(){
-	long int ms,precisao_ms;
+	long int tempo,precisao;
 
 	struct timespec tempo_actual;
 	clock_gettime(CLOCK_MONOTONIC,&tempo_actual);
@@ -289,15 +289,15 @@ long int hora_sistema_ms(){
 	 * que (1*10^9)*(1*10^-6)=1*10^3, ou seja, se 100000000 = ns no formato long
 	 * e aplicarmos a seguinte expressão 100000000 * 10^-6 = 100.
 	 * 100 = ms no formato long */
-	ms = tempo_actual.tv_nsec/1e6;
+	tempo = tempo_actual.tv_nsec/1e6;
 
 	/* ## Conversão de segundos para milisegundos, 1 seg = 1*10^3 ms
 	 * É adicionado os milisegundos ao segundos para ser mais preciso
 	 * Exemplo: 1*1e3=1000, então o tempo será 1+milisegundos que ficam nas
 	 * 3 ultimas casas */
-	precisao_ms=(tempo_actual.tv_sec*1e3)+ms;
+	precisao=(tempo_actual.tv_sec*1e3)+tempo;
 
-	return precisao_ms;
+	return precisao;
 }
 
 /* Funão que recebe que as threads vão adormecer e
