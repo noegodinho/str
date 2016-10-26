@@ -29,4 +29,4 @@ struct thread_info{
 
 void new_rt_task_make_periodic(int, int, struct timespec, struct timespec, int);
 void new_rt_task_make_periodic_relative_ns(int, int, struct timespec, struct timespec, int);
-void new_rt_task_wait_period();
+void new_rt_task_wait_period(int);
