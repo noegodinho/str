@@ -520,6 +520,8 @@ void imprimir(){
 			printf("\nPercentagem de sucesso da Tarefa 1: %d%%\n",Dados_thr[0].percentagem[0]);
 			printf("Percentagem de sucesso da Tarefa 2: %d%%\n",Dados_thr[1].percentagem[0]);
 			printf("Percentagem de sucesso da Tarefa 3: %d%%\n\n",Dados_thr[2].percentagem[0]);
+
+			printf("================== Prioridade Invertida ==================\n\n");
 		}
 		else{
 			printf("Tarefa %d: %ld \tms\n",Imprimir.id_thr_imprimir[i],Imprimir.t_comp_imprimir[i]);
