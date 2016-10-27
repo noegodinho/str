@@ -40,6 +40,7 @@ struct Armazena_Dados_Imprimir{
 /* Estrutura com o tempo de execução das tarefas */
 struct Tempo_Execucao{
 	struct timespec inicio;
+	//struct timespec delay;
 	struct timespec t_inv;
 }Relogio;
 
@@ -112,6 +113,10 @@ int main(int argc, char** argv){
 	Relogio.t_inv.tv_sec = Relogio.inicio.tv_sec + 2;
 	Relogio.t_inv.tv_nsec = Relogio.inicio.tv_nsec;
 
+	/* É para ser usado no relative_ns */
+	/*Relogio.delay.tv_sec = 2;
+	Relogio.delay.tv_nsec = 0;*/
+
 	/* cria as threads */
   pthread_create(&thread_id[0], NULL, &func1, NULL);
   pthread_create(&thread_id[1], NULL, &func2, NULL);
@@ -171,6 +176,7 @@ void *func1(void *arg){
 
 	/* Introdução dos dados referente a thred 1 */
 	new_rt_task_make_periodic(i, 99, Relogio.inicio, Dados_thr[i].periodo, 3);
+	//new_rt_task_make_periodic_relative_ns(i, 99, Relogio.delay, Dados_thr[i].periodo, 3);
 
 	/* Variavel usada para armazenar o tempo de activação/execução
 	 * em formato long int */
@@ -256,6 +262,7 @@ void *func1(void *arg){
 
 			/* Introdução dos dados referente a thred 1 */
 			new_rt_task_make_periodic(i, 97, Relogio.inicio, Dados_thr[i].periodo, 2);
+			//new_rt_task_make_periodic_relative_ns(i, 97, Relogio.delay, Dados_thr[i].periodo, 2);
 
 			tempo_thr = thread_info[i].start.tv_sec*BILLION + thread_info[i].start.tv_nsec;
 
@@ -286,6 +293,7 @@ void *func2(void *arg){
 
 	/* Introdução dos dados referente a thred 1 */
 	new_rt_task_make_periodic(i, 98, Relogio.inicio, Dados_thr[i].periodo, 3);
+	//new_rt_task_make_periodic_relative_ns(i, 98, Relogio.delay, Dados_thr[i].periodo, 3);
 
 	/* Variavel usada para armazenar o tempo de activação/execução
 	 * em formato long int */
@@ -371,6 +379,7 @@ void *func2(void *arg){
 
 			/* Introdução dos dados referente a thred 1 */
 			new_rt_task_make_periodic(i, 98, Relogio.inicio, Dados_thr[i].periodo, 2);
+			//new_rt_task_make_periodic_relative_ns(i, 98, Relogio.delay, Dados_thr[i].periodo, 2);
 
 			tempo_thr = thread_info[i].start.tv_sec*BILLION + thread_info[i].start.tv_nsec;
 
@@ -401,6 +410,7 @@ void *func3(void *arg){
 
 	/* Introdução dos dados referente a thred 1 */
 	new_rt_task_make_periodic(i, 97, Relogio.inicio, Dados_thr[i].periodo, 3);
+	//new_rt_task_make_periodic_relative_ns(i, 97, Relogio.delay, Dados_thr[i].periodo, 3);
 
 	/* Variavel usada para armazenar o tempo de activação/execução
 	 * em formato long int */
@@ -486,6 +496,7 @@ void *func3(void *arg){
 
 			/* Introdução dos dados referente a thred 1 */
 			new_rt_task_make_periodic(i, 99, Relogio.inicio, Dados_thr[i].periodo, 2);
+			//new_rt_task_make_periodic_relative_ns(i, 99, Relogio.delay, Dados_thr[i].periodo, 2);
 
 			tempo_thr = thread_info[i].start.tv_sec*BILLION + thread_info[i].start.tv_nsec;
 
