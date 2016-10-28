@@ -248,10 +248,9 @@ void *func1(void *arg){
 		if((tempo_thr > (Relogio.fim.tv_sec*BILLION + Relogio.fim.tv_nsec)) && Dados_thr[i].mudanca_prioridade == 0){
 
 			/* Espera 1 seguando, para que as outras threads terminem */
-			struct timespec espera_thr;
-			espera_thr.tv_sec = 1;
-			espera_thr.tv_nsec = 0;
-			clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &espera_thr, NULL);
+			Dados_thr[i].tempo_execucao.tv_sec = 1;
+			Dados_thr[i].tempo_execucao.tv_nsec = 0;
+			sleep_thr(i);
 
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados_thr[i].percentagem[0] = 100*Dados_thr[i].num_execucao/Dados_thr[i].num_real_execucao;
@@ -376,10 +375,9 @@ void *func2(void *arg){
 		if((tempo_thr > (Relogio.fim.tv_sec*BILLION + Relogio.fim.tv_nsec)) && Dados_thr[i].mudanca_prioridade == 0){
 
 			/* Espera 1 seguando, para que as outras threads terminem */
-			struct timespec espera_thr;
-			espera_thr.tv_sec = 1;
-			espera_thr.tv_nsec = 0;
-			clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &espera_thr, NULL);
+			Dados_thr[i].tempo_execucao.tv_sec = 1;
+			Dados_thr[i].tempo_execucao.tv_nsec = 0;
+			sleep_thr(i);
 
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados_thr[i].percentagem[0] = 100*Dados_thr[i].num_execucao/Dados_thr[i].num_real_execucao;
@@ -504,10 +502,9 @@ void *func3(void *arg){
 		if((tempo_thr > (Relogio.fim.tv_sec*BILLION + Relogio.fim.tv_nsec)) && Dados_thr[i].mudanca_prioridade == 0){
 
 			/* Espera 1 seguando, para que as outras threads terminem */
-			struct timespec espera_thr;
-			espera_thr.tv_sec = 1;
-			espera_thr.tv_nsec = 0;
-			clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &espera_thr, NULL);
+			Dados_thr[i].tempo_execucao.tv_sec = 1;
+			Dados_thr[i].tempo_execucao.tv_nsec = 0;
+			sleep_thr(i);
 
 			/* O calculo da precentagem, antes da mudança é feito aqui */
       Dados_thr[i].percentagem[0] = 100*Dados_thr[i].num_execucao/Dados_thr[i].num_real_execucao;
