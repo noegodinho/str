@@ -224,7 +224,7 @@ void *func1(void *arg){
 		 * de sucesso tarefa */
 		Dados_thr[i].num_real_execucao++;
 
-    /* É incrementado o num_execucao caso a thread não consiga atingir a meta.
+    /* É incrementado o num_execucao caso a thread consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
     if(Dados_thr[i].tempo_comp < Dados_thr[i].periodo.tv_nsec){
 			Dados_thr[i].num_execucao++;
@@ -351,7 +351,7 @@ void *func2(void *arg){
 		 * de sucesso tarefa */
 		Dados_thr[i].num_real_execucao++;
 
-    /* É incrementado o num_execucao caso a thread não consiga atingir a meta.
+    /* É incrementado o num_execucao caso a thread consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
     if(Dados_thr[i].tempo_comp < Dados_thr[i].periodo.tv_nsec){
 			Dados_thr[i].num_execucao++;
@@ -478,7 +478,7 @@ void *func3(void *arg){
 		 * de sucesso tarefa */
 		Dados_thr[i].num_real_execucao++;
 
-    /* É incrementado o num_execucao caso a thread não consiga atingir a meta.
+    /* É incrementado o num_execucao caso a thread consiga atingir a meta.
 		 * Esse valor é usado para calcular a percentagem de sucesso tarefa */
     if(Dados_thr[i].tempo_comp < Dados_thr[i].periodo.tv_nsec){
 			Dados_thr[i].num_execucao++;
