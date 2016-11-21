@@ -8,8 +8,8 @@
 
 
 CC = gcc
-CFLAGS = -Wall -O2 -D_REENTRANT -lrt -lm
-CCFLAGS ?= -lpthread
+CFLAGS = -Wall -O2 -D_REENTRANT -lrt
+CCFLAGS ?= -lpthread -lm
 SOURCE = ./src/
 BIN = ./bin/
 NAME = ex1
@@ -19,7 +19,7 @@ SU = sudo
 
 subsystem:
 	$(SU) $(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) -o $(TARGET)
-	@$(SU) $(TARGET)
+	@$(SU) $(TARGET) < examples.txt
 
 clean:
 	$(RM) $(BIN)ex1
