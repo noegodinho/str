@@ -19,7 +19,7 @@ SU = sudo
 
 subsystem:
 	$(SU) $(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) -o $(TARGET)
-	@$(SU) $(TARGET) < examples.txt
+	@$(SU) $(TARGET) < examples2.txt
 
 clean:
 	$(RM) $(BIN)ex1

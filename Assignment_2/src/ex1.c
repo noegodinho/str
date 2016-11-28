@@ -105,8 +105,8 @@ int main(int argc, char **argv){
         pthread_create(&thread, NULL, &square_wave, NULL);
     }
 
-    free(thread_info.wave);
     pthread_join(thread, NULL);
+    free(thread_info.wave);
 
     printf("\n===========================================================\n");
     printf("===================== Fim do Programa! ====================\n");
@@ -173,9 +173,64 @@ void *sinusoidal_wave(void *arg){
 }
 
 void *triangular_wave(void *arg){
+    double m, y;
+    long phase_time, period, time_var, time_var2;
+    int i;
+
+    priorities(99);
+    sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
+
+    period = BILLION / thread_info.wave->frequency;
+    phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
+    m = thread_info.wave->amplitude * 4 / period;
+
+    for(i = 0; i <= 10; ++i){
+        time_var2 = i * 1e8;
+        time_var = fmod(time_var2 + period - phase_time, period);
+
+        if(time_var >= 0 && time_var < period / 4){
+            y = m * time_var;        
+        }
+
+        else if(time_var >= period / 4 && time_var < 3 * period / 4){            
+            y = m * (period / 2 - time_var);
+        }
+
+        else{            
+            y = m * (time_var - period);
+        }
+
+        printf("Total: %lf, %ld\n", y, time_var2);
+    }
+
     pthread_exit(NULL);
 }
 
 void *square_wave(void *arg){
+    double y;
+    long phase_time, period, time_var, time_var2;
+    int i;
+
+    priorities(99);
+    sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
+
+    period = BILLION / thread_info.wave->frequency;
+    phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
+
+    for(i = 0; i <= 10; ++i){
+        time_var2 = i * 1e8;
+        time_var = fmod(time_var2 + period - phase_time, period);
+
+        if(time_var >= 0 && time_var < period / 2){
+            y = thread_info.wave->amplitude;        
+        }
+
+        else{            
+            y = -thread_info.wave->amplitude;
+        }
+
+        printf("Total: %lf, %ld\n", y, time_var2);
+    }
+
     pthread_exit(NULL);
 }
