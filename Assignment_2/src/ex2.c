@@ -20,7 +20,7 @@
 
 #define PI 3.141592
 #define BILLION 1e9
-#define N 11
+#define N 1024
 
 /* Array com os valores das ondes geradas */
 double onda_valor[N], onda_valor_parte_im[N];
@@ -189,7 +189,7 @@ void *sinusoidal_wave(void *arg){
 void *triangular_wave(void *arg){
     double m,y;
     long phase_time, period, time_var, time_var2;
-    int i;
+    long int i;
 
     priorities(99);
     sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
@@ -198,7 +198,7 @@ void *triangular_wave(void *arg){
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
     m = thread_info.wave->amplitude * 4 / period;
 
-    for(i = 0; i <= 10; ++i){
+    for(i = 0; i <= N; ++i){
         time_var2 = i * 1e8;
         time_var = fmod(time_var2 + period - phase_time, period);
 
@@ -234,7 +234,7 @@ void *square_wave(void *arg){
     period = BILLION / thread_info.wave->frequency;
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
 
-    for(i = 0; i <= 10; ++i){
+    for(i = 0; i <= N; ++i){
         time_var2 = i * 1e8;
         time_var = fmod(time_var2 + period - phase_time, period);
 
@@ -259,9 +259,11 @@ void *fft(void *arg){
     double Xre[N],Xim[N],arg_cs,dois_PI;
     int k,n;
 
-    priorities(99);
+    priorities(1);
     sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
 
+    /* Visto que vamos fazer um somatório, então
+     * os vectores têm que conter só zeros */
     for(k=0; k<N; ++k){
         Xre[k]=0.0;
         Xim[k]=0.0;
@@ -272,6 +274,9 @@ void *fft(void *arg){
     
     printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
 
+    /* Aplico a expressão da FFT unidimensional, calculos depois
+     * apresentados no relatório, a explicar como chegamos a essas
+     * expressões aqui aplicadas */
     for(k=0; k<N; ++k){
         for(n=0; n<N; ++n){
             arg_cs = (double)(k*n);
