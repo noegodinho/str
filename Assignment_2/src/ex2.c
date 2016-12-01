@@ -20,7 +20,7 @@
 
 #define PI 3.141592
 #define BILLION 1e9
-#define N 1024
+#define N 21
 
 /* Array com os valores das ondes geradas */
 double onda_valor[N], onda_valor_parte_im[N];
@@ -187,9 +187,9 @@ void *sinusoidal_wave(void *arg){
 }
 
 void *triangular_wave(void *arg){
-    double m,y;
+    double m;
     long phase_time, period, time_var, time_var2;
-    long int i;
+    int i;
 
     priorities(99);
     sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
@@ -198,33 +198,29 @@ void *triangular_wave(void *arg){
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
     m = thread_info.wave->amplitude * 4 / period;
 
-    for(i = 0; i <= N; ++i){
+    for(i = 0; i < N; ++i){
         time_var2 = i * 1e8;
         time_var = fmod(time_var2 + period - phase_time, period);
 
         if(time_var >= 0 && time_var < period / 4){
-            y = m * time_var;        
+            onda_valor[i] = m * time_var;        
         }
 
         else if(time_var >= period / 4 && time_var < 3 * period / 4){            
-            y = m * (period / 2 - time_var);
+            onda_valor[i] = m * (period / 2 - time_var);
         }
 
         else{            
-            y = m * (time_var - period);
+            onda_valor[i] = m * (time_var - period);
         }
 
-        // O resultado do sinal no instante é armazenado no array
-        onda_valor[i] = y;
-
-        printf("Total: %lf, %ld\n", y, time_var2);
+        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
     }
 
     pthread_exit(NULL);
 }
 
 void *square_wave(void *arg){
-    double y;
     long phase_time, period, time_var, time_var2;
     int i;
 
@@ -234,22 +230,19 @@ void *square_wave(void *arg){
     period = BILLION / thread_info.wave->frequency;
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
 
-    for(i = 0; i <= N; ++i){
+    for(i = 0; i < N; ++i){
         time_var2 = i * 1e8;
         time_var = fmod(time_var2 + period - phase_time, period);
 
         if(time_var >= 0 && time_var < period / 2){
-            y = thread_info.wave->amplitude;        
+            onda_valor[i] = thread_info.wave->amplitude;        
         }
 
         else{            
-            y = -thread_info.wave->amplitude;
+            onda_valor[i] = -thread_info.wave->amplitude;
         }
 
-        // O resultado do sinal no instante é armazenado no array
-        onda_valor[i] = y;
-
-        printf("Total: %lf, %ld\n", y, time_var2);
+        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
     }
 
     pthread_exit(NULL);
