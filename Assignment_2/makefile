@@ -22,4 +22,4 @@ subsystem:
 	@$(SU) $(TARGET) < examples2.txt
 
 clean:
-	$(RM) $(BIN)ex1
+	$(RM) $(BIN)ex1 $(BIN)ex2
