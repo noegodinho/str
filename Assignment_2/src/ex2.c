@@ -48,7 +48,6 @@ void *sinusoidal_wave(void *);
 void *triangular_wave(void *);
 void *square_wave(void *);
 void *fft(void *);
-void four(double *, double *);
 
 int main(int argc, char **argv){
     cpu_set_t set;
@@ -257,8 +256,8 @@ void *square_wave(void *arg){
 }
 
 void *fft(void *arg){
-    double Xre[N],Xim[N];
-    int k;
+    double Xre[N],Xim[N],arg_cs,dois_PI;
+    int k,n;
 
     priorities(99);
     sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
@@ -268,33 +267,21 @@ void *fft(void *arg){
         Xim[k]=0.0;
     }
 
-    four(Xre,Xim);
+    // Como vamos calcular a fft então theta = -2*pi
+    dois_PI = -2.0*PI;
     
     printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
-
-    for(k = 0; k < N; ++k){
-        printf("X[%d] = %lf + j %lf\n",k,Xre[k],Xim[k]);
-    }
-    
-    pthread_exit(NULL);
-}
-
-void four(double *data_re,double *data_im){
-    double arg_cs,dois_PI,coseno,seno;
-    int k,n;
-
-    // Como vamos calcular a fft então -2*pi
-    dois_PI = -2.0*PI;
 
     for(k=0; k<N; ++k){
         for(n=0; n<N; ++n){
             arg_cs = (double)(k*n);
             arg_cs = (arg_cs*dois_PI)/N;
-            coseno = cos(arg_cs);
-            seno = sin(arg_cs);
 
-            data_re[k] += onda_valor[n]*coseno - onda_valor_parte_im[n]*seno;
-            data_im[k] += onda_valor[n]*seno + onda_valor_parte_im[n]*coseno;
+            Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
+            Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
         }
+        printf("X[%d] = %lf + j %lf\n",k,Xre[k],Xim[k]);
     }
+    
+    pthread_exit(NULL);
 }
