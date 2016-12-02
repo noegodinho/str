@@ -210,7 +210,7 @@ void *sinusoidal_wave(void *arg){
         	thread_info.start_autocorr_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", sum, time_var);
+        printf("Total: %lf, \t%ld\n", sum, time_var);
     }    
 
     pthread_exit(NULL);
@@ -253,7 +253,7 @@ void *triangular_wave(void *arg){
         	thread_info.start_autocorr_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
+        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }    
     pthread_exit(NULL);
 }
@@ -289,7 +289,7 @@ void *square_wave(void *arg){
         	thread_info.start_autocorr_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
+        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }
 
     pthread_exit(NULL);
@@ -323,7 +323,7 @@ void *auto_correlacao(void *arg){
 	int pos;
 	for(k = 0; k < N; ++k){
 		pos = k-N/2;
-		printf("Rx[%d] = %lf\n",pos,Rx[k]);
+		printf("Rx[%d]\t= %lf\n",pos,Rx[k]);
 	}
 
 	pthread_exit(NULL);
