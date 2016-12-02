@@ -12,14 +12,14 @@ CFLAGS = -Wall -O2 -D_REENTRANT -lrt
 CCFLAGS ?= -lpthread -lm
 SOURCE = ./src/
 BIN = ./bin/
-NAME = ex3
+NAME = ex1
 FILE = $(SOURCE)$(NAME)
 TARGET = $(BIN)$(NAME)
 SU = sudo
 
 subsystem:
 	$(SU) $(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) -o $(TARGET)
-	@$(SU) $(TARGET) < examples2.txt
+	@$(SU) $(TARGET) < examples_t.txt
 
 clean:
 	$(RM) $(BIN)ex1 $(BIN)ex2 $(BIN)ex3
