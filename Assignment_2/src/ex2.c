@@ -210,7 +210,7 @@ void *sinusoidal_wave(void *arg){
         	thread_info.start_fft_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", sum, time_var);
+        printf("Total: %lf, \t%ld\n", sum, time_var);
     }    
 
     pthread_exit(NULL);
@@ -253,7 +253,7 @@ void *triangular_wave(void *arg){
         	thread_info.start_fft_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
+        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }    
     pthread_exit(NULL);
 }
@@ -289,7 +289,7 @@ void *square_wave(void *arg){
         	thread_info.start_fft_nseconds = 0;
         }
 
-        printf("Total: %lf, %ld\n", onda_valor[i], time_var2);
+        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }
 
     pthread_exit(NULL);
@@ -324,7 +324,7 @@ void *fft(void *arg){
             Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
             Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
         }
-        printf("X[%d] = %lf + j %lf\n",k,Xre[k],Xim[k]);
+        printf("X[%d]\t= %lf \t+ j %lf\n",k,Xre[k],Xim[k]);
     }
     
     pthread_exit(NULL);
