@@ -12,7 +12,7 @@ CFLAGS = -Wall -O2 -D_REENTRANT -lrt
 CCFLAGS ?= -lpthread -lm
 SOURCE = ./src/
 BIN = ./bin/
-NAME = ex2
+NAME = ex3
 FILE = $(SOURCE)$(NAME)
 TARGET = $(BIN)$(NAME)
 SU = sudo
@@ -22,4 +22,4 @@ subsystem:
 	@$(SU) $(TARGET) < examples2.txt
 
 clean:
-	$(RM) $(BIN)ex1 $(BIN)ex2
+	$(RM) $(BIN)ex1 $(BIN)ex2 $(BIN)ex3
