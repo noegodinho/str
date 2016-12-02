@@ -334,34 +334,32 @@ void *fft(void *arg){
 }
 
 void *auto_correlacao(void *arg){
-	double rx,Rx[N];
-	int k,n,posicao_meio;
+	int pos_meio,k,n,tamanho;
+
+	tamanho = (2*N) - 1;
+	pos_meio = tamanho/2;
+
+	double Rxx[tamanho],rxx;
 
 	priorities(98);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
-	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
+	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",2*N-1);
 
-	/* Como a auto correlação tem simetria par
-	 * então só preciso calcular os valores de
-	 * n=0..N/2 */
-	posicao_meio = N/2;
-
-	for(k = 0; k <= posicao_meio; ++k){
-		rx = 0.0;
+	for(k = 0; k <= pos_meio; ++k){
+		rxx = 0.0;
 		
-		for(n = 0; n <= posicao_meio - k; ++n){
-			rx += onda_valor[n]*onda_valor[n+k];
+		for(n = 0; n < N - 1; ++n){
+			rxx += onda_valor[n]*onda_valor[n+k];
 		}
 
-		Rx[posicao_meio+k] = rx;
-		Rx[posicao_meio-k] = rx;
+		Rxx[pos_meio - k] = rxx;
+		Rxx[pos_meio + k] = rxx;
 	}
 
-	int pos;
-	for(k = 0; k < N; ++k){
-		pos = k-N/2;
-		printf("Rx[%d]\t= %lf\n",pos,Rx[k]);
+	for(k = 0; k < tamanho; ++k){
+		//printf("Rxx[%d]\t= %lf\n",k,Rxx[k]);
+		printf("%lf\n",Rxx[k]);
 	}
 
 	pthread_exit(NULL);
