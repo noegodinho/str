@@ -358,8 +358,7 @@ void *auto_correlacao(void *arg){
 	}
 
 	for(k = 0; k < tamanho; ++k){
-		//printf("Rxx[%d]\t= %lf\n",k,Rxx[k]);
-		printf("%lf\n",Rxx[k]);
+		printf("Rxx[ %d ] \t= %lf\n",k-pos_meio,Rxx[k]);
 	}
 
 	pthread_exit(NULL);
