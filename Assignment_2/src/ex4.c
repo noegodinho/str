@@ -41,8 +41,8 @@ struct thread_info{
 
     /* Variáveis que contem o segundo
      * e o nanosegundo da thread da fft */
-    time_t start_fft_seconds;
-    long start_fft_nseconds;
+    time_t start_fft_autocorr_seconds;
+    long start_fft_autocorr_nseconds;
 }thread_info;
 
 
@@ -54,6 +54,7 @@ void *sinusoidal_wave(void *);
 void *triangular_wave(void *);
 void *square_wave(void *);
 void *fft(void *);
+void *auto_correlacao(void *);
 
 int main(int argc, char **argv){
     cpu_set_t set;
@@ -122,6 +123,8 @@ int main(int argc, char **argv){
 
     pthread_create(&thread, NULL, &fft, NULL);
 
+    pthread_create(&thread, NULL, &auto_correlacao, NULL);
+
     pthread_join(thread, NULL);
     free(thread_info.wave);
 
@@ -142,8 +145,8 @@ void start_thread_time(){
     /* Estou a definir que o thread para fft deve ser activada
      * 1 segundo depois da thread que geradora de sinal, visto que
      * a fft depende dos dados provenientes da geração */
-    thread_info.start_fft_seconds = thread_info.start_time_seconds + 1;
-    thread_info.start_fft_nseconds = 0;
+    thread_info.start_fft_autocorr_seconds = thread_info.start_time_seconds + 1;
+    thread_info.start_fft_autocorr_nseconds = 0;
 }
 
 /* Função que define o valor das prioridades das threads */
@@ -181,7 +184,7 @@ void sleep_thread(time_t sec, long nsec){
 void *sinusoidal_wave(void *arg){
     double omega, phase;
     double sum;
-    long time;
+    long time, time1;
     long time_var;
     int i, j;
 
@@ -205,13 +208,17 @@ void *sinusoidal_wave(void *arg){
         /* Vou buscar a hora actual do sistema para verificar para depois verificar
          * se tempo actual está próximo do tempo de activação da thread para fft */
         time = hora_sistema();
-        if(time >= ((thread_info.start_fft_seconds*BILLION + thread_info.start_fft_nseconds) - 20)){
-        	thread_info.start_fft_seconds = thread_info.start_fft_seconds + 1;
-        	thread_info.start_fft_nseconds = 0;
+        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
+        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
+        	thread_info.start_fft_autocorr_nseconds = 0;
         }
+    }
 
-        printf("Total: %lf, \t%ld\n", sum, time_var);
-    }    
+    time = hora_sistema();
+    time1 = thread_info.start_time_seconds*BILLION + thread_info.start_time_nanoseconds;
+    time -= time1;
+
+    printf("Geracao\t\t= %ld nano-segundos\n",time);
 
     pthread_exit(NULL);
 }
@@ -219,7 +226,7 @@ void *sinusoidal_wave(void *arg){
 void *triangular_wave(void *arg){
     double m;
     long phase_time, period, time_var, time_var2;
-    long int time;
+    long time, time1;
     int i;
 
     priorities(99);
@@ -248,20 +255,24 @@ void *triangular_wave(void *arg){
         /* Vou buscar a hora actual do sistema para verificar para depois verificar
          * se tempo actual está próximo do tempo de activação da thread para fft */
         time = hora_sistema();
-        if(time >= ((thread_info.start_fft_seconds*BILLION + thread_info.start_fft_nseconds) - 20)){
-        	thread_info.start_fft_seconds = thread_info.start_fft_seconds + 1;
-        	thread_info.start_fft_nseconds = 0;
+        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
+        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
+        	thread_info.start_fft_autocorr_nseconds = 0;
         }
+    }
 
-        printf("%lf\n", onda_valor[i]);
-    }    
+    time = hora_sistema();
+    time1 = thread_info.start_time_seconds*BILLION + thread_info.start_time_nanoseconds;
+    time -= time1;
+
+    printf("Geracao\t\t= %ld nano-segundos\n",time);
     pthread_exit(NULL);
 }
 
 void *square_wave(void *arg){
     long phase_time, period, time_var, time_var2;
     int i;
-    long time;
+    long time,time1;
 
     priorities(99);
     sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
@@ -284,28 +295,30 @@ void *square_wave(void *arg){
         /* Vou buscar a hora actual do sistema para verificar para depois verificar
          * se tempo actual está próximo do tempo de activação da thread para fft */
         time = hora_sistema();
-        if(time >= ((thread_info.start_fft_seconds*BILLION + thread_info.start_fft_nseconds) - 20)){
-        	thread_info.start_fft_seconds = thread_info.start_fft_seconds + 1;
-        	thread_info.start_fft_nseconds = 0;
+        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
+        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
+        	thread_info.start_fft_autocorr_nseconds = 0;
         }
-
-        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }
 
+    time = hora_sistema();
+    time1 = thread_info.start_time_seconds*BILLION + thread_info.start_time_nanoseconds;
+    time -= time1;
+
+    printf("Geracao\t\t= %ld nano-segundos\n",time);
     pthread_exit(NULL);
 }
 
 void *fft(void *arg){
     double Xre[N],Xim[N],arg_cs,dois_PI;
     int k,n;
+    long time,time1;
 
     priorities(99);
-    sleep_thread(thread_info.start_fft_seconds, thread_info.start_fft_nseconds);
+    sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
     // Como vamos calcular a fft então theta = -2*pi
     dois_PI = -2.0*PI;
-    
-    printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
 
     /* Aplico a expressão da FFT unidimensional, calculos depois
      * apresentados no relatório, a explicar como chegamos a essas
@@ -324,8 +337,44 @@ void *fft(void *arg){
             Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
             Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
         }
-        printf("X[%d]\t= %lf \t+ j %lf\n",k,Xre[k],Xim[k]);
     }
-    
+
+    time = hora_sistema();
+    time1 = thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds;
+    time -= time1;
+
+    printf("FFT\t\t= %ld nano-segundos\n",time);
     pthread_exit(NULL);
+}
+
+void *auto_correlacao(void *arg){
+	int pos_meio,k,n,tamanho;
+    long time,time1;
+
+	tamanho = (2*N) - 1;
+	pos_meio = tamanho/2;
+
+	double Rxx[tamanho],rxx;
+
+	priorities(98);
+    sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
+
+	for(k = 0; k <= pos_meio; ++k){
+		rxx = 0.0;
+		
+		for(n = 0; n < N - 1; ++n){
+			rxx += onda_valor[n]*onda_valor[n+k];
+		}
+
+		Rxx[pos_meio - k] = rxx;
+		Rxx[pos_meio + k] = rxx;
+	}
+
+    time = hora_sistema();
+    time1 = thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds;
+    time -= time1;
+
+    printf("Auto correlacao\t= %ld nano-segundos\n",time);
+
+	pthread_exit(NULL);
 }
