@@ -253,7 +253,7 @@ void *triangular_wave(void *arg){
         	thread_info.start_fft_nseconds = 0;
         }
 
-        printf("%lf\n", onda_valor[i]);
+        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
     }    
     pthread_exit(NULL);
 }
