@@ -20,7 +20,8 @@
 
 #define PI 3.141592
 #define BILLION 1e9
-#define N 1024
+#define NUM_THREADS 2
+#define N 21
 
 /* Array com os valores das ondes geradas */
 double onda_valor[N], onda_valor_parte_im[N];
@@ -57,7 +58,7 @@ void *fft(void *);
 
 int main(int argc, char **argv){
     cpu_set_t set;
-    pthread_t thread;
+    pthread_t thread[NUM_THREADS];
     int i, scan = 0;
 
     printf("===========================================================\n");
@@ -109,20 +110,22 @@ int main(int argc, char **argv){
     start_thread_time();
 
     if(thread_info.wave_type == 0){
-        pthread_create(&thread, NULL, &sinusoidal_wave, NULL);
+        pthread_create(&thread[0], NULL, &sinusoidal_wave, NULL);
     }
 
     else if(thread_info.wave_type == 1){
-        pthread_create(&thread, NULL, &triangular_wave, NULL);
+        pthread_create(&thread[0], NULL, &triangular_wave, NULL);
     }
 
     else{
-        pthread_create(&thread, NULL, &square_wave, NULL);
+        pthread_create(&thread[0], NULL, &square_wave, NULL);
     }
 
-    pthread_create(&thread, NULL, &fft, NULL);
+    pthread_create(&thread[1], NULL, &fft, NULL);
 
-    pthread_join(thread, NULL);
+    for(int i = 0; i < NUM_THREADS; ++i){
+        pthread_join(thread[i], NULL);
+    }
     free(thread_info.wave);
 
     printf("\n===========================================================\n");
@@ -310,7 +313,7 @@ void *fft(void *arg){
     /* Aplico a expressão da FFT unidimensional, calculos depois
      * apresentados no relatório, a explicar como chegamos a essas
      * expressões aqui aplicadas */
-    for(k=0; k<N; ++k){
+    for(k = 0; k < N; ++k){
 
     	/* Visto que vamos fazer um somatório, então
      	 * os vectores têm que conter só zeros */

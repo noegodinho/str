@@ -20,6 +20,7 @@
 
 #define PI 3.141592
 #define BILLION 1e9
+#define NUM_THREADS 3
 #define N 21
 
 /* Array com os valores das ondes geradas */
@@ -58,7 +59,7 @@ void *auto_correlacao(void *);
 
 int main(int argc, char **argv){
     cpu_set_t set;
-    pthread_t thread;
+    pthread_t thread[NUM_THREADS];
     int i, scan = 0;
 
     printf("===========================================================\n");
@@ -110,22 +111,24 @@ int main(int argc, char **argv){
     start_thread_time();
 
     if(thread_info.wave_type == 0){
-        pthread_create(&thread, NULL, &sinusoidal_wave, NULL);
+        pthread_create(&thread[0], NULL, &sinusoidal_wave, NULL);
     }
 
     else if(thread_info.wave_type == 1){
-        pthread_create(&thread, NULL, &triangular_wave, NULL);
+        pthread_create(&thread[0], NULL, &triangular_wave, NULL);
     }
 
     else{
-        pthread_create(&thread, NULL, &square_wave, NULL);
+        pthread_create(&thread[0], NULL, &square_wave, NULL);
     }
 
-    pthread_create(&thread, NULL, &fft, NULL);
+    pthread_create(&thread[1], NULL, &fft, NULL);
 
-    pthread_create(&thread, NULL, &auto_correlacao, NULL);
+    pthread_create(&thread[2], NULL, &auto_correlacao, NULL);
 
-    pthread_join(thread, NULL);
+    for(int i = 0; i < NUM_THREADS; ++i){
+        pthread_join(thread[i], NULL);
+    }
     free(thread_info.wave);
 
     printf("\n===========================================================\n");
