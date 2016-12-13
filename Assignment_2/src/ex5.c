@@ -21,7 +21,7 @@
 #define PI 3.141592
 #define BILLION 1e9
 #define NUM_THREADS 3
-#define N 1024
+#define N 21
 
 #define CGeracao 73 
 
@@ -178,16 +178,21 @@ void sleep_thread(time_t sec, long nsec){
 
 void *gera_sinal(void *arg){
     long time_var;
+    long actual_time, end_time;
     int j, i;
     j = 0;
     i = 0;
     signal_info[i].periodo.tv_sec = 0;
-    signal_info[i].periodo.tv_nsec = 110*CGeracao*BILLION;
+    signal_info[i].periodo.tv_nsec = 110*CGeracao;
     signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
     signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
     priorities(99);
-    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+
+    actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
+    end_time = relogio.end_time.tv_sec * BILLION + relogio.end_time.tv_nsec;
+
+    while(actual_time < end_time){
         sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
         time_var = hora_sistema();
         if(thread_info.wave_type == 0)
@@ -195,14 +200,27 @@ void *gera_sinal(void *arg){
         else if(thread_info.wave_type == 1)
             triangular_wave(time_var, j);
         else
-            square_wave(time_var, j);
-        ++j;
+            square_wave(time_var, j);        
         
         signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
         signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
 
+        if(signal_info[i].tempo_execucao.tv_nsec > BILLION){
+            signal_info[i].tempo_execucao.tv_nsec -= BILLION;
+            ++signal_info[i].tempo_execucao.tv_sec;
+        }
+
+        actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
+
         printf("y = %lf\ttime = %ld\n",onda_valor[j], time_var);
+        
+        if(j == N-1){
+            j = 0;
+        }
+
+        ++j;
     }
+
     pthread_exit(NULL);
 }
 
@@ -263,17 +281,21 @@ void square_wave(long time_var, int i){
 
 void *fft(void *arg){
     double *X;
-    X = (double *)malloc(sizeof(double) * (2*N));
+    double actual_time, end_time;
     int i = 1;
-    signal_info[i].periodo.tv_sec = signal_info[0].periodo.tv_sec;
-    signal_info[i].periodo.tv_nsec = 4*signal_info[0].periodo.tv_nsec;
-    signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
-    signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
-    printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
+    X = (double *)malloc(sizeof(double) * (2*N));
+    signal_info[i].periodo.tv_sec = 0;
+    signal_info[i].periodo.tv_nsec = 4*110*CGeracao;
+    signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
+    signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;    
 
     priorities(98);
-    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+
+    actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
+    end_time = relogio.end_time.tv_sec * BILLION + relogio.end_time.tv_nsec;
+
+    while(actual_time < end_time){
         sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
 
         for(int i = 0, j = 0; i < 2*N; i += 2, ++j){
@@ -289,7 +311,15 @@ void *fft(void *arg){
 
         signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
         signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
+
+        if(signal_info[i].tempo_execucao.tv_nsec > BILLION){
+            signal_info[i].tempo_execucao.tv_nsec -= BILLION;
+            ++signal_info[i].tempo_execucao.tv_sec;
+        }
+
+        actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
     }
+
     pthread_exit(NULL);
 }
 
@@ -345,17 +375,20 @@ void dfour1(double data[], unsigned long nn, int isign){
 void *auto_correlacao(void *arg){
     int pos_meio = N/2;
     double Rxx[N+1];
-
+    double actual_time, end_time;
     int i = 2;
-    signal_info[i].periodo.tv_sec = signal_info[0].periodo.tv_sec;
-    signal_info[i].periodo.tv_nsec = 11*signal_info[0].periodo.tv_nsec;
+
+    signal_info[i].periodo.tv_sec = 0;
+    signal_info[i].periodo.tv_nsec = 11*110*CGeracao;
     signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
     signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
-    printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
-
     priorities(97);
-    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+
+    actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
+    end_time = relogio.end_time.tv_sec * BILLION + relogio.end_time.tv_nsec;
+
+    while(actual_time < end_time){
         sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
         
         a_corr(Rxx, pos_meio);
@@ -366,6 +399,13 @@ void *auto_correlacao(void *arg){
 
         signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
         signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
+
+        if(signal_info[i].tempo_execucao.tv_nsec > BILLION){
+            signal_info[i].tempo_execucao.tv_nsec -= BILLION;
+            ++signal_info[i].tempo_execucao.tv_sec;
+        }
+
+        actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
     }
 
     pthread_exit(NULL);
