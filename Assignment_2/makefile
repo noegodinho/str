@@ -16,8 +16,12 @@ NAME = ex4
 FILE = $(SOURCE)$(NAME)
 TARGET = $(BIN)$(NAME)
 SU = sudo
+CLR = clear
 
 subsystem:
+	make clean
+	@$(CLR)
+	@$(CLR)
 	$(SU) $(CC) $(CFLAGS) $(FILE).c $(CCFLAGS) -o $(TARGET)
 	@$(SU) $(TARGET) < examples_t.txt
 
