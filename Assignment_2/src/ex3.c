@@ -24,7 +24,7 @@
 #define N 21
 
 /* Array com os valores das ondes geradas */
-double onda_valor[N], onda_valor_parte_im[N];
+double onda_valor[N];
 
 
 struct wave_info{
@@ -52,7 +52,7 @@ void priorities(int);
 void sleep_thread(time_t, long);
 long int hora_sistema();
 void dfour1(double [], unsigned long, int);
-void a_corr(double *);
+void a_corr(double *, int);
 void *sinusoidal_wave(void *);
 void *triangular_wave(void *);
 void *square_wave(void *);
@@ -103,11 +103,6 @@ int main(int argc, char **argv){
         scan = scanf("%lf", &thread_info.wave[i].amplitude);
         scan = scanf("%lf", &thread_info.wave[i].frequency);
         scan = scanf("%lf", &thread_info.wave[i].phase);
-    }
-
-    // Inicializo a parte imaginaria da onda
-    for(i = 0; i < N; ++i){
-        onda_valor_parte_im[i] = 0.0;
     }
 
     start_thread_time();
@@ -384,7 +379,7 @@ void *auto_correlacao(void *arg){
 
 	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
 
-	a_corr(Rxx);
+	a_corr(Rxx, pos_meio);
 
 	for(int k = 0; k < N; ++k){
 		printf("Rxx[%d] = %lf\n",k-pos_meio,Rxx[k]);
@@ -393,16 +388,15 @@ void *auto_correlacao(void *arg){
 	pthread_exit(NULL);
 }
 
-void a_corr(double *Rx){
-    int pos_meio = N/2;
+void a_corr(double *Rx, int p_meio){
     double rxx;
 
-    for(int k = 0; k <= pos_meio; ++k){
+    for(int k = 0; k <= p_meio; ++k){
         rxx = 0.0;
-        for(int n = 0; n <= pos_meio - k; ++n){
+        for(int n = 0; n <= p_meio - k; ++n){
             rxx += onda_valor[n]*onda_valor[n+k];
         }
-        Rx[pos_meio + k] = rxx;
-        Rx[pos_meio - k] = rxx;
+        Rx[p_meio + k] = rxx;
+        Rx[p_meio - k] = rxx;
     }
 }

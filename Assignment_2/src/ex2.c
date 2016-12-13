@@ -24,7 +24,7 @@
 #define N 21
 
 /* Array com os valores das ondes geradas */
-double onda_valor[N], onda_valor_parte_im[N];
+double onda_valor[N];
 
 
 struct wave_info{
@@ -101,11 +101,6 @@ int main(int argc, char **argv){
         scan = scanf("%lf", &thread_info.wave[i].amplitude);
         scan = scanf("%lf", &thread_info.wave[i].frequency);
         scan = scanf("%lf", &thread_info.wave[i].phase);
-    }
-
-    // Inicializo a parte imaginaria da onda
-    for(i = 0; i < N; ++i){
-        onda_valor_parte_im[i] = 0.0;
     }
 
     start_thread_time();
@@ -299,6 +294,7 @@ void *square_wave(void *arg){
     pthread_exit(NULL);
 }
 
+/* Função usada para chamar a função para chamar a função do livro recomendado pelo professor */
 void *fft(void *arg){
     double *X;
     X = (double *)malloc(sizeof(double) * (2*N));
