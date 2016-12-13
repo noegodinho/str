@@ -385,7 +385,6 @@ void *auto_correlacao(void *arg){
 
 	for(int k = 0; k <= pos_meio; ++k){
 		rxx = 0.0;
-		
 		for(int n = 0; n <= pos_meio - k; ++n){
 			rxx += onda_valor[n]*onda_valor[n+k];
 		}
