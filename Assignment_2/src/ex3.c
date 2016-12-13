@@ -51,6 +51,7 @@ void start_thread_time();
 void priorities(int);
 void sleep_thread(time_t, long);
 long int hora_sistema();
+void dfour1(double [], unsigned long, int);
 void *sinusoidal_wave(void *);
 void *triangular_wave(void *);
 void *square_wave(void *);
@@ -302,39 +303,76 @@ void *square_wave(void *arg){
 }
 
 void *fft(void *arg){
-    double Xre[N],Xim[N],arg_cs,dois_PI;
-    int k,n;
+    double *X;
+    X = (double *)malloc(sizeof(double) * (2*N));
 
     priorities(99);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
-
-    // Como vamos calcular a fft então theta = -2*pi
-    dois_PI = -2.0*PI;
     
-    printf("\n\n\nA FFT de %d pontos:\n\n",N);
+    printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
 
-    /* Aplico a expressão da FFT unidimensional, calculos depois
-     * apresentados no relatório, a explicar como chegamos a essas
-     * expressões aqui aplicadas */
-    for(k=0; k<N; ++k){
+    for(int i = 0, j = 0; i < 2*N; i += 2, ++j){
+        X[i] = onda_valor[j];
+        X[i+1] = 0.0;
+    }
 
-    	/* Visto que vamos fazer um somatório, então
-     	 * os vectores têm que conter só zeros */
-    	Xre[k]=0.0;
-        Xim[k]=0.0;
+    dfour1(X-1, N, 1);
 
-        for(n=0; n<N; ++n){
-            arg_cs = (double)(k*n);
-            arg_cs = (arg_cs*dois_PI)/N;
-
-            Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
-            Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
-        }
-        printf("X[%d]\t= %lf \t+ j %lf\n",k,Xre[k],Xim[k]);
+    for(int i = 0; i < N; ++i){
+        printf("X[%d] = %lf + j %lf \n",i, X[i], X[i+1]);
     }
     
     pthread_exit(NULL);
 }
+
+#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
+
+void dfour1(double data[], unsigned long nn, int isign){
+    unsigned long n,mmax,m,j,istep,i;
+    double wtemp,wr,wpr,wpi,wi,theta;
+    double tempr,tempi;
+
+    n=nn << 1;
+    j=1;
+    for (i=1;i<n;i+=2) {
+        if (j > i) {
+            SWAP(data[j],data[i]);
+            SWAP(data[j+1],data[i+1]);
+        }
+        m=n >> 1;
+        while (m >= 2 && j > m) {
+            j -= m;
+            m >>= 1;
+        }
+        j += m;
+    }
+    mmax=2;
+    while (n > mmax) {
+        istep=mmax << 1;
+        theta=isign*(6.28318530717959/mmax);
+        wtemp=sin(0.5*theta);
+        wpr = -2.0*wtemp*wtemp;
+        wpi=sin(theta);
+        wr=1.0;
+        wi=0.0;
+        for (m=1;m<mmax;m+=2) {
+            for (i=m;i<=n;i+=istep) {
+                j=i+mmax;
+                tempr=wr*data[j]-wi*data[j+1];
+                tempi=wr*data[j+1]+wi*data[j];
+                data[j]=data[i]-tempr;
+                data[j+1]=data[i+1]-tempi;
+                data[i] += tempr;
+                data[i+1] += tempi;
+            }
+            wr=(wtemp=wr)*wpr-wi*wpi+wr;
+            wi=wi*wpr+wtemp*wpi+wi;
+        }
+        mmax=istep;
+    }
+}
+
+#undef SWAP
 
 void *auto_correlacao(void *arg){
 	int pos_meio = N/2;
@@ -358,7 +396,7 @@ void *auto_correlacao(void *arg){
 	}
 
 	for(int k = 0; k < N; ++k){
-		printf("Rxx[ %d ] \t= %lf\n",k-pos_meio,Rxx[k]);
+		printf("Rxx[%d] = %lf\n",k-pos_meio,Rxx[k]);
 	}
 
 	pthread_exit(NULL);
