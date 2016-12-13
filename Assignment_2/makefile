@@ -8,11 +8,11 @@
 
 
 CC = gcc
-CFLAGS = -Wall -O2 -D_REENTRANT -lrt
-CCFLAGS ?= -lpthread -lm
+CFLAGS = -Wall -O2 -D_REENTRANT
+CCFLAGS ?= -lpthread -lm -lrt
 SOURCE = ./src/
 BIN = ./bin/
-NAME = ex4
+NAME = ex6
 FILE = $(SOURCE)$(NAME)
 TARGET = $(BIN)$(NAME)
 SU = sudo
@@ -26,4 +26,4 @@ subsystem:
 	@$(SU) $(TARGET) < examples_t.txt
 
 clean:
-	$(RM) $(BIN)ex1 $(BIN)ex2 $(BIN)ex3 $(BIN)ex4
+	$(RM) $(BIN)ex1 $(BIN)ex2 $(BIN)ex3 $(BIN)ex4 $(BIN)ex5 $(BIN)ex6 $(BIN)ex7
