@@ -20,13 +20,18 @@
 
 #define PI 3.141592
 #define BILLION 1e9
-#define N 21
+#define NUM_THREADS 3
+#define N 1024
 
-#define Cgera 3376070
+#define CGeracao 73 
 
 /* Array com os valores das ondes geradas */
-double onda_valor[N], onda_valor_parte_im[N];
+double onda_valor[N];
 
+struct Relogio{
+    struct timespec start_time;
+    struct timespec end_time;
+}relogio;
 
 struct wave_info{
     double amplitude;
@@ -38,29 +43,31 @@ struct thread_info{
     struct wave_info *wave;
     int number_of_waves;
     int wave_type;
-    time_t start_time_seconds;
-    long start_time_nanoseconds;
-
-    /* Variáveis que contem o segundo
-     * e o nanosegundo da thread da fft */
-    time_t start_fft_autocorr_seconds;
-    long start_fft_autocorr_nseconds;
 }thread_info;
+
+struct Signal_Info{
+    struct timespec periodo;
+    struct timespec tempo_execucao;
+}signal_info[NUM_THREADS];
 
 
 void start_thread_time();
 void priorities(int);
 void sleep_thread(time_t, long);
 long int hora_sistema();
-void *sinusoidal_wave(void *);
-void *triangular_wave(void *);
-void *square_wave(void *);
+void dfour1(double [], unsigned long, int);
+void a_corr(double *, int);
+void sinusoidal_wave(long , int);
+void triangular_wave(long , int);
+void square_wave(long , int);
+
+void *gera_sinal(void *);
 void *fft(void *);
 void *auto_correlacao(void *);
 
 int main(int argc, char **argv){
     cpu_set_t set;
-    pthread_t thread;
+    pthread_t thread[NUM_THREADS];
     int i, scan = 0;
 
     printf("===========================================================\n");
@@ -104,30 +111,17 @@ int main(int argc, char **argv){
         scan = scanf("%lf", &thread_info.wave[i].phase);
     }
 
-    // Inicializo a parte imaginaria da onda
-    for(i = 0; i < N; ++i){
-        onda_valor_parte_im[i] = 0.0;
-    }
-
     start_thread_time();
 
-    if(thread_info.wave_type == 0){
-        pthread_create(&thread, NULL, &sinusoidal_wave, NULL);
+    pthread_create(&thread[0], NULL, &gera_sinal, NULL);
+
+    pthread_create(&thread[1], NULL, &fft, NULL);
+
+    pthread_create(&thread[2], NULL, &auto_correlacao, NULL);
+
+    for(int i = 0; i < NUM_THREADS; ++i){
+        pthread_join(thread[i], NULL);
     }
-
-    else if(thread_info.wave_type == 1){
-        pthread_create(&thread, NULL, &triangular_wave, NULL);
-    }
-
-    else{
-        pthread_create(&thread, NULL, &square_wave, NULL);
-    }
-
-    pthread_create(&thread, NULL, &fft, NULL);
-
-    pthread_create(&thread, NULL, &auto_correlacao, NULL);
-
-    pthread_join(thread, NULL);
     free(thread_info.wave);
 
     printf("\n===========================================================\n");
@@ -139,16 +133,15 @@ int main(int argc, char **argv){
 
 void start_thread_time(){
     struct timespec time_struct;
-
     clock_gettime(CLOCK_MONOTONIC, &time_struct);
-    thread_info.start_time_seconds = time_struct.tv_sec;
-    thread_info.start_time_nanoseconds = time_struct.tv_nsec;
 
-    /* Estou a definir que o thread para fft deve ser activada
-     * 1 segundo depois da thread que geradora de sinal, visto que
-     * a fft depende dos dados provenientes da geração */
-    thread_info.start_fft_autocorr_seconds = thread_info.start_time_seconds + 1;
-    thread_info.start_fft_autocorr_nseconds = 0;
+    /* Definimos que as threads devem iniciar 2 segundos depois da hora actual do sistema */
+    relogio.start_time.tv_sec = time_struct.tv_sec + 2;
+    relogio.start_time.tv_nsec = time_struct.tv_nsec;
+
+    /* Definimos que as threads devem terminar 2 segundos depois de terem iniciado */
+    relogio.end_time.tv_sec = relogio.start_time.tv_sec + 1;
+    relogio.end_time.tv_nsec = 0;
 }
 
 /* Função que define o valor das prioridades das threads */
@@ -183,185 +176,210 @@ void sleep_thread(time_t sec, long nsec){
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &time_to_sleep, NULL);
 }
 
-void *sinusoidal_wave(void *arg){
-    double omega, phase;
-    double sum;
-    long time;
+void *gera_sinal(void *arg){
     long time_var;
-    int i, j;
+    int j, i;
+    j = 0;
+    i = 0;
+    signal_info[i].periodo.tv_sec = 0;
+    signal_info[i].periodo.tv_nsec = 110*CGeracao*BILLION;
+    signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
+    signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
     priorities(99);
-    sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
+    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+        sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
+        time_var = hora_sistema();
+        if(thread_info.wave_type == 0)
+            sinusoidal_wave(time_var, j);
+        else if(thread_info.wave_type == 1)
+            triangular_wave(time_var, j);
+        else
+            square_wave(time_var, j);
+        ++j;
+        
+        signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
+        signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
 
-    for(j = 0; j < N; ++j){
-        time_var = j * 1e8;
-        sum = 0;
-
-        for(i = 0; i < thread_info.number_of_waves; ++i){
-            omega = 2 * PI * thread_info.wave[i].frequency;
-            phase = thread_info.wave[i].phase * PI / 180.0;        
-            
-            sum += (thread_info.wave[i].amplitude * sin(omega * time_var / BILLION + phase));
-        }
-
-        // O resultado do sinal no instante é armazenado no array
-        onda_valor[j] = sum;
-
-        /* Vou buscar a hora actual do sistema para verificar para depois verificar
-         * se tempo actual está próximo do tempo de activação da thread para fft */
-        time = hora_sistema();
-        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
-        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
-        	thread_info.start_fft_autocorr_nseconds = 0;
-        }
-
-        printf("Total: %lf, \t%ld\n", sum, time_var);
-    }    
-
+        printf("y = %lf\ttime = %ld\n",onda_valor[j], time_var);
+    }
     pthread_exit(NULL);
 }
 
-void *triangular_wave(void *arg){
-    double m;
-    long phase_time, period, time_var, time_var2;
-    long int time;
-    int i;
+void sinusoidal_wave(long time_var, int j){
+    double omega, phase, sum;
 
-    priorities(99);
-    sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
+    sum = 0;
+    for(int i = 0; i < thread_info.number_of_waves; ++i){
+        omega = 2 * PI * thread_info.wave[i].frequency;
+        phase = thread_info.wave[i].phase * PI / 180.0;        
+        
+        sum += (thread_info.wave[i].amplitude * sin(omega * time_var / BILLION + phase));
+    }
+
+    // O resultado do sinal no instante é armazenado no array
+    onda_valor[j] = sum;
+}
+
+void triangular_wave(long time_var, int i){
+    double m;
+    long phase_time, period;
 
     period = BILLION / thread_info.wave->frequency;
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
     m = thread_info.wave->amplitude * 4 / period;
 
-    for(i = 0; i < N; ++i){
-        time_var2 = i * 1e8;
-        time_var = fmod(time_var2 + period - phase_time, period);
+    time_var = fmod(time_var + period - phase_time, period);
 
-        if(time_var >= 0 && time_var < period / 4){
-            onda_valor[i] = m * time_var;        
-        }
+    if(time_var >= 0 && time_var < period / 4){
+        onda_valor[i] = m * time_var;        
+    }
 
-        else if(time_var >= period / 4 && time_var < 3 * period / 4){            
-            onda_valor[i] = m * (period / 2 - time_var);
-        }
+    else if(time_var >= period / 4 && time_var < 3 * period / 4){            
+        onda_valor[i] = m * (period / 2 - time_var);
+    }
 
-        else{            
-            onda_valor[i] = m * (time_var - period);
-        }
-
-        /* Vou buscar a hora actual do sistema para verificar para depois verificar
-         * se tempo actual está próximo do tempo de activação da thread para fft */
-        time = hora_sistema();
-        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
-        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
-        	thread_info.start_fft_autocorr_nseconds = 0;
-        }
-
-        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
-    }    
-    pthread_exit(NULL);
+    else{            
+        onda_valor[i] = m * (time_var - period);
+    }
 }
 
-void *square_wave(void *arg){
-    long phase_time, period, time_var, time_var2;
-    int i;
-    long time;
-
-    priorities(99);
-    sleep_thread(thread_info.start_time_seconds, thread_info.start_time_nanoseconds);
+void square_wave(long time_var, int i){
+    long phase_time, period;
 
     period = BILLION / thread_info.wave->frequency;
     phase_time = fmod((thread_info.wave->phase * period) / (2*PI), period);
 
-    for(i = 0; i < N; ++i){
-        time_var2 = i * 1e8;
-        time_var = fmod(time_var2 + period - phase_time, period);
+    time_var = fmod(time_var + period - phase_time, period);
 
-        if(time_var >= 0 && time_var < period / 2){
-            onda_valor[i] = thread_info.wave->amplitude;        
-        }
-
-        else{            
-            onda_valor[i] = -thread_info.wave->amplitude;
-        }
-
-        /* Vou buscar a hora actual do sistema para verificar para depois verificar
-         * se tempo actual está próximo do tempo de activação da thread para fft */
-        time = hora_sistema();
-        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
-        	thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
-        	thread_info.start_fft_autocorr_nseconds = 0;
-        }
-
-        printf("Total: %lf, \t%ld\n", onda_valor[i], time_var2);
+    if(time_var >= 0 && time_var < period / 2){
+        onda_valor[i] = thread_info.wave->amplitude;        
     }
 
-    pthread_exit(NULL);
+    else{            
+        onda_valor[i] = -thread_info.wave->amplitude;
+    }
 }
 
 void *fft(void *arg){
-    double Xre[N],Xim[N],arg_cs,dois_PI;
-    int k,n;
+    double *X;
+    X = (double *)malloc(sizeof(double) * (2*N));
+    int i = 1;
+    signal_info[i].periodo.tv_sec = signal_info[0].periodo.tv_sec;
+    signal_info[i].periodo.tv_nsec = 4*signal_info[0].periodo.tv_nsec;
+    signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
+    signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
-    priorities(99);
-    sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
+    printf("\n\n\nA FFT de %d pontos:\n\n\n",N);
 
-    // Como vamos calcular a fft então theta = -2*pi
-    dois_PI = -2.0*PI;
-    
-    printf("\n\n\nA FFT de %d pontos:\n\n",N);
+    priorities(98);
+    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+        sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
 
-    /* Aplico a expressão da FFT unidimensional, calculos depois
-     * apresentados no relatório, a explicar como chegamos a essas
-     * expressões aqui aplicadas */
-    for(k=0; k<N; ++k){
-
-    	/* Visto que vamos fazer um somatório, então
-     	 * os vectores têm que conter só zeros */
-    	Xre[k]=0.0;
-        Xim[k]=0.0;
-
-        for(n=0; n<N; ++n){
-            arg_cs = (double)(k*n);
-            arg_cs = (arg_cs*dois_PI)/N;
-
-            Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
-            Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
+        for(int i = 0, j = 0; i < 2*N; i += 2, ++j){
+            X[i] = onda_valor[j];
+            X[i+1] = 0.0;
         }
-        printf("X[%d]\t= %lf \t+ j %lf\n",k,Xre[k],Xim[k]);
+
+        dfour1(X-1, N, 1);
+
+        for(int i = 0; i < N; ++i){
+            printf("X[%d] = %lf + j %lf \n",i, X[i], X[i+1]);
+        }
+
+        signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
+        signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
     }
-    
     pthread_exit(NULL);
 }
 
+#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
+
+void dfour1(double data[], unsigned long nn, int isign){
+    unsigned long n,mmax,m,j,istep,i;
+    double wtemp,wr,wpr,wpi,wi,theta;
+    double tempr,tempi;
+
+    n=nn << 1;
+    j=1;
+    for (i=1;i<n;i+=2) {
+        if (j > i) {
+            SWAP(data[j],data[i]);
+            SWAP(data[j+1],data[i+1]);
+        }
+        m=n >> 1;
+        while (m >= 2 && j > m) {
+            j -= m;
+            m >>= 1;
+        }
+        j += m;
+    }
+    mmax=2;
+    while (n > mmax) {
+        istep=mmax << 1;
+        theta=isign*(6.28318530717959/mmax);
+        wtemp=sin(0.5*theta);
+        wpr = -2.0*wtemp*wtemp;
+        wpi=sin(theta);
+        wr=1.0;
+        wi=0.0;
+        for (m=1;m<mmax;m+=2) {
+            for (i=m;i<=n;i+=istep) {
+                j=i+mmax;
+                tempr=wr*data[j]-wi*data[j+1];
+                tempi=wr*data[j+1]+wi*data[j];
+                data[j]=data[i]-tempr;
+                data[j+1]=data[i+1]-tempi;
+                data[i] += tempr;
+                data[i+1] += tempi;
+            }
+            wr=(wtemp=wr)*wpr-wi*wpi+wr;
+            wi=wi*wpr+wtemp*wpi+wi;
+        }
+        mmax=istep;
+    }
+}
+
+#undef SWAP
+
 void *auto_correlacao(void *arg){
-	int pos_meio,k,n,tamanho;
+    int pos_meio = N/2;
+    double Rxx[N+1];
 
-	tamanho = (2*N) - 1;
-	pos_meio = tamanho/2;
+    int i = 2;
+    signal_info[i].periodo.tv_sec = signal_info[0].periodo.tv_sec;
+    signal_info[i].periodo.tv_nsec = 11*signal_info[0].periodo.tv_nsec;
+    signal_info[i].tempo_execucao.tv_sec = relogio.start_time.tv_sec;
+    signal_info[i].tempo_execucao.tv_nsec = relogio.start_time.tv_nsec;
 
-	double Rxx[tamanho],rxx;
+    printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
 
-	priorities(98);
-    sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
+    priorities(97);
+    while((signal_info[i].tempo_execucao.tv_sec*BILLION+signal_info[i].tempo_execucao.tv_nsec) < (relogio.end_time.tv_sec*BILLION+relogio.end_time.tv_nsec)){
+        sleep_thread(signal_info[i].tempo_execucao.tv_sec, signal_info[i].tempo_execucao.tv_nsec);
+        
+        a_corr(Rxx, pos_meio);
 
-	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",2*N-1);
+        for(int k = 0; k < N; ++k){
+            printf("Rxx[%d] = %lf\n",k-pos_meio,Rxx[k]);
+        }
 
-	for(k = 0; k <= pos_meio; ++k){
-		rxx = 0.0;
-		
-		for(n = 0; n < N - 1; ++n){
-			rxx += onda_valor[n]*onda_valor[n+k];
-		}
+        signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
+        signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
+    }
 
-		Rxx[pos_meio - k] = rxx;
-		Rxx[pos_meio + k] = rxx;
-	}
+    pthread_exit(NULL);
+}
 
-	for(k = 0; k < tamanho; ++k){
-		printf("Rxx[ %d ] \t= %lf\n",k-pos_meio,Rxx[k]);
-	}
+void a_corr(double *Rx, int p_meio){
+    double rxx;
 
-	pthread_exit(NULL);
+    for(int k = 0; k <= p_meio; ++k){
+        rxx = 0.0;
+        for(int n = 0; n <= p_meio - k; ++n){
+            rxx += onda_valor[n]*onda_valor[n+k];
+        }
+        Rx[p_meio + k] = rxx;
+        Rx[p_meio - k] = rxx;
+    }
 }
