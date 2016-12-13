@@ -26,4 +26,4 @@ subsystem:
 	@$(SU) $(TARGET) < examples_t.txt
 
 clean:
-	$(RM) $(BIN)ex1 $(BIN)ex2 $(BIN)ex3 $(BIN)ex4 $(BIN)ex5 $(BIN)ex6 $(BIN)ex7
+	$(RM) $(BIN)*
