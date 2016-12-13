@@ -177,8 +177,7 @@ void sleep_thread(time_t sec, long nsec){
 }
 
 void *gera_sinal(void *arg){
-    long time_var, time, time_actual;
-    long average;
+    long time_var, average;
     int j;
 
     priorities(99);
@@ -186,27 +185,15 @@ void *gera_sinal(void *arg){
 
     average = 0;
     for(j = 0; j < N; ++j){
-        time_var = j * 1e8;
-
-        time_actual = hora_sistema();
-
+        time_var = hora_sistema();
         if(thread_info.wave_type == 0)
             sinusoidal_wave(time_var, j);
         else if(thread_info.wave_type == 1)
             triangular_wave(time_var, j);
         else
-            square_wave(time_var, j);
+            square_wave(time_var, j);        
 
-        average += hora_sistema() - time_actual;
-        
-
-        /* Vou buscar a hora actual do sistema para verificar para depois verificar
-         * se tempo actual está próximo do tempo de activação da thread para fft */
-        time = hora_sistema();
-        if(time >= ((thread_info.start_fft_autocorr_seconds*BILLION + thread_info.start_fft_autocorr_nseconds) - 20)){
-            thread_info.start_fft_autocorr_seconds = thread_info.start_fft_autocorr_seconds + 1;
-            thread_info.start_fft_autocorr_nseconds = 0;
-        }
+        average += hora_sistema() - time_var;
     }
     printf("Geracao\t\t=\t%ld\tnano-segundos\n",average/N);
 
@@ -270,36 +257,34 @@ void square_wave(long time_var, int i){
 
 void *fft(void *arg){
     double Xre[N],Xim[N],arg_cs,dois_PI;
-    int k,n;
     long time_actual, average;
 
-    priorities(99);
+    priorities(2);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
     // Como vamos calcular a fft então theta = -2*pi
     dois_PI = -2.0*PI;
 
-    average = 0;
-
     /* Aplico a expressão da FFT unidimensional, calculos depois
      * apresentados no relatório, a explicar como chegamos a essas
      * expressões aqui aplicadas */
-    for(k=0; k<N; ++k){
+    average = 0;
+    for(int t = 0; t < N; ++t){
         time_actual = hora_sistema();
+        for(int k=0; k<N; ++k){
+            /* Visto que vamos fazer um somatório, então
+             * os vectores têm que conter só zeros */
+            Xre[k]=0.0;
+            Xim[k]=0.0;
 
-    	/* Visto que vamos fazer um somatório, então
-     	 * os vectores têm que conter só zeros */
-    	Xre[k]=0.0;
-        Xim[k]=0.0;
+            for(int n=0; n<N; ++n){
+                arg_cs = (double)(k*n);
+                arg_cs = (arg_cs*dois_PI)/N;
 
-        for(n=0; n<N; ++n){
-            arg_cs = (double)(k*n);
-            arg_cs = (arg_cs*dois_PI)/N;
-
-            Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
-            Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
+                Xre[k] += onda_valor[n]*cos(arg_cs) - onda_valor_parte_im[n]*sin(arg_cs);
+                Xim[k] += onda_valor[n]*sin(arg_cs) + onda_valor_parte_im[n]*cos(arg_cs);
+            }
         }
-
         average += hora_sistema() - time_actual;
     }
     printf("FFT\t\t=\t%ld\tnano-segundos\n",average/N);
@@ -307,28 +292,27 @@ void *fft(void *arg){
 }
 
 void *auto_correlacao(void *arg){
-	int pos_meio,k,n,tamanho;
     long time_actual, average;
+	int pos_meio = N/2;
+	double Rxx[N+1],rxx;
 
-	tamanho = (2*N) - 1;
-	pos_meio = tamanho/2;
-
-	double rxx;
-
-	priorities(98);
+	priorities(2);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
     average = 0;
-	for(k = 0; k <= pos_meio; ++k){
+    for(int t = 0; t < N; ++t){
         time_actual = hora_sistema();
-
-		rxx = 0.0;
-		
-		for(n = 0; n < N - 1; ++n){
-			rxx += onda_valor[n]*onda_valor[n+k];
-		}
+        for(int k = 0; k <= pos_meio; ++k){
+            rxx = 0.0;
+            for(int n = 0; n <= pos_meio - k; ++n){
+                rxx += onda_valor[n]*onda_valor[n+k];
+            }
+            Rxx[pos_meio + k] = rxx;
+            Rxx[pos_meio - k] = rxx;
+        }
         average += hora_sistema() - time_actual;
-	}
+    }
+    
     printf("Auto correlacao\t=\t%ld\tnano-segundos\n",average/N);
 
 	pthread_exit(NULL);
