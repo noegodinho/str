@@ -52,6 +52,7 @@ void priorities(int);
 void sleep_thread(time_t, long);
 long int hora_sistema();
 void dfour1(double [], unsigned long, int);
+void a_corr(double *);
 void *sinusoidal_wave(void *);
 void *triangular_wave(void *);
 void *square_wave(void *);
@@ -376,26 +377,32 @@ void dfour1(double data[], unsigned long nn, int isign){
 
 void *auto_correlacao(void *arg){
 	int pos_meio = N/2;
-	double Rxx[N+1],rxx;
+	double Rxx[N+1];
 
 	priorities(98);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
 	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
 
-	for(int k = 0; k <= pos_meio; ++k){
-		rxx = 0.0;
-		for(int n = 0; n <= pos_meio - k; ++n){
-			rxx += onda_valor[n]*onda_valor[n+k];
-		}
-
-		Rxx[pos_meio - k] = rxx;
-		Rxx[pos_meio + k] = rxx;
-	}
+	a_corr(Rxx);
 
 	for(int k = 0; k < N; ++k){
 		printf("Rxx[%d] = %lf\n",k-pos_meio,Rxx[k]);
 	}
 
 	pthread_exit(NULL);
+}
+
+void a_corr(double *Rx){
+    int pos_meio = N/2;
+    double rxx;
+
+    for(int k = 0; k <= pos_meio; ++k){
+        rxx = 0.0;
+        for(int n = 0; n <= pos_meio - k; ++n){
+            rxx += onda_valor[n]*onda_valor[n+k];
+        }
+        Rx[pos_meio + k] = rxx;
+        Rx[pos_meio - k] = rxx;
+    }
 }
