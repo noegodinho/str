@@ -376,7 +376,6 @@ void dfour1(double data[], unsigned long nn, int isign){
 
 void *auto_correlacao(void *arg){
 	int pos_meio = N/2;
-
 	double Rxx[N+1],rxx;
 
 	priorities(98);
