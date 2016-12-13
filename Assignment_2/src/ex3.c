@@ -379,7 +379,7 @@ void *auto_correlacao(void *arg){
 	int pos_meio = N/2;
 	double Rxx[N+1];
 
-	priorities(98);
+	priorities(99);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
 	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
