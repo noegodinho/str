@@ -337,22 +337,19 @@ void *fft(void *arg){
 }
 
 void *auto_correlacao(void *arg){
-	int pos_meio,k,n,tamanho;
+	int pos_meio = N/2;
 
-	tamanho = (2*N) - 1;
-	pos_meio = tamanho/2;
-
-	double Rxx[tamanho],rxx;
+	double Rxx[N+1],rxx;
 
 	priorities(98);
     sleep_thread(thread_info.start_fft_autocorr_seconds, thread_info.start_fft_autocorr_nseconds);
 
-	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",2*N-1);
+	printf("\n\n\nA Auto Correlacao de %d pontos:\n\n",N);
 
-	for(k = 0; k <= pos_meio; ++k){
+	for(int k = 0; k <= pos_meio; ++k){
 		rxx = 0.0;
 		
-		for(n = 0; n < N - 1; ++n){
+		for(int n = 0; n <= pos_meio - k; ++n){
 			rxx += onda_valor[n]*onda_valor[n+k];
 		}
 
@@ -360,7 +357,7 @@ void *auto_correlacao(void *arg){
 		Rxx[pos_meio + k] = rxx;
 	}
 
-	for(k = 0; k < tamanho; ++k){
+	for(int k = 0; k < N; ++k){
 		printf("Rxx[ %d ] \t= %lf\n",k-pos_meio,Rxx[k]);
 	}
 
