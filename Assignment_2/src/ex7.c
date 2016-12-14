@@ -22,7 +22,7 @@
 #define PI 3.141592
 #define BILLION 1e9
 #define NUM_THREADS 3
-#define N 1024
+#define N 3
 #define CGeracao 73
 
 #define QUEUE_NAME "/queue"
@@ -278,8 +278,7 @@ void *gera_sinal(void *arg){
 
         actual_time = signal_info[i].tempo_execucao.tv_sec * BILLION + signal_info[i].tempo_execucao.tv_nsec;
 
-        //printf("y = %lf\ttime = %ld\n",onda_valor[j], time_var);
-        fprintf(save_values, "%d %lf\n", j, onda_valor[j]);    
+        fprintf(save_values, "%ld %lf\n", time_var, onda_valor[j]);               
 
         if(j == N-1){
             j = 0;
@@ -294,6 +293,8 @@ void *gera_sinal(void *arg){
 
         ++j;
     }
+
+    //fclose(save_values);
 
     mq_close(mq);
     mq_close(mq2);
@@ -414,13 +415,11 @@ void *fft(void *arg){
 
         dfour1(X-1, N, 1);
 
-        for(int i = 0; i < N-1; ++i){
-            //printf("X[%d] = %lf + j %lf \n",i, X[i], X[i+1]);
-            
+        for(int i = 0; i < 2*N; i+=2){
             sqrt_calc = sqrt(X[i]*X[i] + X[i+1]*X[i+1]);
 
-            fprintf(save_values, "%d %lf\n", i, sqrt_calc);
-        }        
+            fprintf(save_values, "%ld %lf\n", hora_sistema(), sqrt_calc);                
+        }
 
         signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
         signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
@@ -435,6 +434,8 @@ void *fft(void *arg){
         tp.tv_sec += 100;
         mq_timedsend(mq2, (const char *) &onda, sizeof(double) * N, 0, &tp);        
     }
+
+    //fclose(save_values);
 
     mq_close(mq);
     mq_close(mq2);
@@ -537,10 +538,9 @@ void *auto_correlacao(void *arg){
 
         a_corr(Rxx, pos_meio, onda2);
 
-        for(int k = 0; k < N; ++k){
-            //printf("Rxx[%d] = %lf\n",k-pos_meio,Rxx[k]);
-            fprintf(save_values, "%d %lf\n", k, Rxx[k]); 
-        }        
+        for(int k = 0; k < N; ++k){            
+            fprintf(save_values, "%ld %lf\n", hora_sistema(), Rxx[k]);                             
+        }      
 
         signal_info[i].tempo_execucao.tv_sec += signal_info[i].periodo.tv_sec;
         signal_info[i].tempo_execucao.tv_nsec += signal_info[i].periodo.tv_nsec;
@@ -555,6 +555,8 @@ void *auto_correlacao(void *arg){
         tp.tv_sec += 100;
         mq_timedsend(mq2, (const char *) &onda2, sizeof(double) * N, 0, &tp);
     }
+
+    //fclose(save_values);
 
     mq_close(mq);
     mq_close(mq2);

@@ -399,7 +399,7 @@ void *fft(void *arg){
 
         dfour1(X-1, N, 1);
 
-        for(int i = 0; i < N; ++i){
+        for(int i = 0; i < 2*N; i+=2){
             printf("X[%d] = %lf + j %lf \n",i, X[i], X[i+1]);
         }
 
